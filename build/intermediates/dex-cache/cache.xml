@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="/Users/leahxu/Library/Android/sdk/extras/android/m2repository/com/android/support/support-v4/18.0.0/support-v4-18.0.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="44ec51e9d395a47aab135e5e1b556c0007442156">
+        <dex dex="/Users/leahxu/git/Cardboard Version/app/build/intermediates/pre-dexed/debug/support-v4-18.0.0-c56533ae55bbfd3e651b7ab35d55a4acaf941611.jar" />
+    </item>
+    <item
+        jar="/Users/leahxu/git/Cardboard Version/app/libs/cardboard.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="7800973ef52ae629978ad974370b6a0b9bc79e25">
+        <dex dex="/Users/leahxu/git/Cardboard Version/app/build/intermediates/pre-dexed/debug/cardboard-197b011caa93bb281f4905b924b7b68f73a358ca.jar" />
+    </item>
+
+</items>
