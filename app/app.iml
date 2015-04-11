@@ -87,6 +87,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="support-v4-18.0.0" level="project" />
     <orderEntry type="library" exported="" name="cardboard" level="project" />
+    <orderEntry type="library" exported="" name="httpmime-4.0" level="project" />
   </component>
 </module>
 

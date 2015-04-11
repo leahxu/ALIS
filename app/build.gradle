@@ -21,4 +21,5 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:18.0.0'
     compile files('libs/cardboard.jar')
+    compile files('libs/httpmime-4.0.jar')
 }

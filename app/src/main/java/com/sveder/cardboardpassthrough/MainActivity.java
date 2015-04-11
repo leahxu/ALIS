@@ -23,6 +23,7 @@ import android.hardware.Camera;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Vibrator;
 import android.util.Log;
 
@@ -35,19 +36,97 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.File;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpVersion;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.util.EntityUtils;
 
 /**
  * A Cardboard sample application.
  */
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer, OnFrameAvailableListener {
 
+    public static final int MEDIA_TYPE_IMAGE = 1;
+    public static final int MEDIA_TYPE_VIDEO = 2;
     private static final String TAG = "MainActivity";
     private static final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
+    File temp_picture;
     private Camera camera;
+
+    private Camera.PictureCallback mPicture =
+            new Camera.PictureCallback() {
+
+                @Override
+                public void onPictureTaken(byte[] data, Camera camera) {
+
+                    temp_picture = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+                    if (temp_picture == null){
+                        Log.d(TAG, "Error creating media file, check storage permissions");
+                        return;
+                    }
+/*
+            try {
+                FileOutputStream fos = new FileOutputStream(temp_picture);
+                fos.write(data);
+                fos.close();
+            } catch (FileNotFoundException e) {
+                Log.d(TAG, "File not found: " + e.getMessage());
+            } catch (IOException e) {
+                Log.d(TAG, "Error accessing file: " + e.getMessage());
+            }
+*/
+                    mOverlayView.show3DToast("Recognizing object");
+                }
+            };
+    private static File getOutputMediaFile(int type){
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "MyCameraApp");
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
+        if (! mediaStorageDir.exists()){
+            if (! mediaStorageDir.mkdirs()){
+                Log.d("MyCameraApp", "failed to create directory");
+                return null;
+            }
+        }
+
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        File mediaFile;
+        if (type == MEDIA_TYPE_IMAGE){
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                    "IMG_"+ timeStamp + ".jpg");
+        } else if(type == MEDIA_TYPE_VIDEO) {
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                    "VID_"+ timeStamp + ".mp4");
+        } else {
+            return null;
+        }
+
+        return mediaFile;
+    }
 
     private final String vertexShaderCode =
             "attribute vec4 position;" +
@@ -166,7 +245,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
      * Converts a raw text file, saved as a resource, into an OpenGL ES shader
      *
      * @param type  The type of shader we will be creating.
-     * @param resId The resource ID of the raw text file about to be turned into a shader.
      * @return
      */
     private int loadGLShader(int type, String code) {
@@ -486,67 +564,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     public void onFinishFrame(Viewport viewport) {
     }
 
-//    /**
-//     * Draw the cube. We've set all of our transformation matrices. Now we simply pass them into
-//     * the shader.
-//     */
-//    public void drawCube() {
-//        // This is not the floor!
-//        GLES20.glUniform1f(mIsFloorParam, 0f);
-//
-//        // Set the Model in the shader, used to calculate lighting
-//        GLES20.glUniformMatrix4fv(mModelParam, 1, false, mModelCube, 0);
-//
-//        // Set the ModelView in the shader, used to calculate lighting
-//        GLES20.glUniformMatrix4fv(mModelViewParam, 1, false, mModelView, 0);
-//
-//        // Set the position of the cube
-//        GLES20.glVertexAttribPointer(mPositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT,
-//                false, 0, mCubeVertices);
-//
-//        // Set the ModelViewProjection matrix in the shader.
-//        GLES20.glUniformMatrix4fv(mModelViewProjectionParam, 1, false, mModelViewProjection, 0);
-//
-//        // Set the normal positions of the cube, again for shading
-//        GLES20.glVertexAttribPointer(mNormalParam, 3, GLES20.GL_FLOAT,
-//                false, 0, mCubeNormals);
-//
-//
-//
-//        if (isLookingAtObject()) {
-//            GLES20.glVertexAttribPointer(mColorParam, 4, GLES20.GL_FLOAT, false,
-//                    0, mCubeFoundColors);
-//        } else {
-//            GLES20.glVertexAttribPointer(mColorParam, 4, GLES20.GL_FLOAT, false,
-//                    0, mCubeColors);
-//        }
-//        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
-//        checkGLError("Drawing cube");
-//    }
-//
-//    /**
-//     * Draw the floor. This feeds in data for the floor into the shader. Note that this doesn't
-//     * feed in data about position of the light, so if we rewrite our code to draw the floor first,
-//     * the lighting might look strange.
-//     */
-//    public void drawFloor(float[] perspective) {
-//        // This is the floor!
-//        GLES20.glUniform1f(mIsFloorParam, 1f);
-//
-//        // Set ModelView, MVP, position, normals, and color
-//        GLES20.glUniformMatrix4fv(mModelParam, 1, false, mModelFloor, 0);
-//        GLES20.glUniformMatrix4fv(mModelViewParam, 1, false, mModelView, 0);
-//        GLES20.glUniformMatrix4fv(mModelViewProjectionParam, 1, false, mModelViewProjection, 0);
-//        GLES20.glVertexAttribPointer(mPositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT,
-//                false, 0, mFloorVertices);
-//        GLES20.glVertexAttribPointer(mNormalParam, 3, GLES20.GL_FLOAT, false, 0, mFloorNormals);
-//        GLES20.glVertexAttribPointer(mColorParam, 4, GLES20.GL_FLOAT, false, 0, mFloorColors);
-//        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
-//
-//        checkGLError("drawing floor");
-//    }
-//
-
     /**
      * Increment the score, hide the object, and give feedback if the user pulls the magnet while
      * looking at the object. Otherwise, remind the user what to do.
@@ -554,15 +571,53 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     @Override
     public void onCardboardTrigger() {
         Log.i(TAG, "onCardboardTrigger");
-//
-//        if (isLookingAtObject()) {
-//            mScore++;
-//            mOverlayView.show3DToast("Found it! Look around for another one.\nScore = " + mScore);
-//            hideObject();
-//        } else {
-//            mOverlayView.show3DToast("Look around to find the object!");
-//        }
-//        // Always give user feedback
+
+        mOverlayView.show3DToast("Capturing Object");
+
+        try {
+            camera.takePicture(null, null, mPicture);
+        } catch (Exception e) {
+            Log.d("Take Picture Failed.:", e.getMessage());
+        }
+        try {
+            camera.setPreviewTexture(surface);
+            camera.startPreview();
+        } catch (IOException ioe) {
+            Log.w("MainActivity", "CAM LAUNCH FAILED");
+        }
+
+        // Authorization: Basic dEGa15gLOpEfua3MckyEXCz9MgzfzT48QEmte7wDCjeaPPtJBZ
+
+        HttpClient httpclient = new DefaultHttpClient();
+        httpclient.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+
+        HttpPost httppost = new HttpPost("https://www.metamind.io/vision/classify");
+
+        MultipartEntity mpEntity = new MultipartEntity();
+        ContentBody cbFile = new FileBody(temp_picture, "image/jpeg");
+        mpEntity.addPart("userfile", cbFile);
+
+
+        httppost.setEntity(mpEntity);
+        System.out.println("executing request " + httppost.getRequestLine());
+
+        try {
+            HttpResponse response = httpclient.execute(httppost);
+            HttpEntity resEntity = response.getEntity();
+            System.out.println(response.getStatusLine());
+            if (resEntity != null) {
+                System.out.println(EntityUtils.toString(resEntity));
+            }
+            if (resEntity != null) {
+                resEntity.consumeContent();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        httpclient.getConnectionManager().shutdown();
+
+       // Always give user feedback
         mVibrator.vibrate(50);
     }
 
