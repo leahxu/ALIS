@@ -70,7 +70,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private static final String TAG = "MainActivity";
     private static final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
     File temp_picture;
-    private Camera camera; 
+    private Camera camera;
 
     private Camera.PictureCallback mPicture =
             new Camera.PictureCallback() {
