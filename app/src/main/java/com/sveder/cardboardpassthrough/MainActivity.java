@@ -33,6 +33,8 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -81,7 +83,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                         Log.d(TAG, "Error creating media file, check storage permissions");
                         return;
                     }
-/*
+
             try {
                 FileOutputStream fos = new FileOutputStream(temp_picture);
                 fos.write(data);
@@ -91,8 +93,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             } catch (IOException e) {
                 Log.d(TAG, "Error accessing file: " + e.getMessage());
             }
-*/
-                    mOverlayView.show3DToast("Recognizing object");
+
+            camera.startPreview();
                 }
             };
     private static File getOutputMediaFile(int type){
@@ -108,6 +110,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         if (! mediaStorageDir.exists()){
             if (! mediaStorageDir.mkdirs()){
                 Log.d("MyCameraApp", "failed to create directory");
+                Log.e("Derp2","Media File Created");
+
                 return null;
             }
         }
@@ -122,6 +126,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
                     "VID_"+ timeStamp + ".mp4");
         } else {
+            Log.e("Derp1","Media File Created");
+
             return null;
         }
 
@@ -573,21 +579,19 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         Log.i(TAG, "onCardboardTrigger");
 
         mOverlayView.show3DToast("Capturing Object");
-
         try {
             camera.takePicture(null, null, mPicture);
+            mOverlayView.show3DToast("Take picture SUccess");
         } catch (Exception e) {
-            Log.d("Take Picture Failed.:", e.getMessage());
+            Log.e("Take Picture Failed.:", e.getMessage());
         }
-        try {
-            camera.setPreviewTexture(surface);
-            camera.startPreview();
-        } catch (IOException ioe) {
-            Log.w("MainActivity", "CAM LAUNCH FAILED");
-        }
+
+
+
+
 
         // Authorization: Basic dEGa15gLOpEfua3MckyEXCz9MgzfzT48QEmte7wDCjeaPPtJBZ
-
+/*
         HttpClient httpclient = new DefaultHttpClient();
         httpclient.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
 
@@ -618,7 +622,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         httpclient.getConnectionManager().shutdown();
 
        // Always give user feedback
-        mVibrator.vibrate(50);
+        mVibrator.vibrate(50);*/
     }
 
 
@@ -643,4 +647,19 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 //
 //        return (Math.abs(pitch) < PITCH_LIMIT) && (Math.abs(yaw) < YAW_LIMIT);
 //    }
+/*
+    public void onPause() {
+        camera.stopPreview();
+        camera.release();
+        super.onPause();
+    }
+    public void onResume() {
+        super.onResume();
+
+        if (camera == null) {
+            camera = Camera.open();
+        }
+        camera.startPreview();
+    }
+    */
 }
