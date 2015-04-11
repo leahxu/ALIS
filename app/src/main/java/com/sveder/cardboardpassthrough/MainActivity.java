@@ -37,26 +37,33 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
 /**
  * A Cardboard sample application.
@@ -586,19 +593,29 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             Log.w("MainActivity", "CAM LAUNCH FAILED");
         }
 
-        // Authorization: Basic dEGa15gLOpEfua3MckyEXCz9MgzfzT48QEmte7wDCjeaPPtJBZ
+        String apiKey =  "Basic dEGa15gLOpEfua3MckyEXCz9MgzfzT48QEmte7wDCjeaPPtJBZ";
+        String uri = "https://www.metamind.io/vision/classify";
+        String result = "";
+        String contentType = "image/jpeg";
+        String imgSource = "<img src=" + temp_picture + ">";
 
         HttpClient httpclient = new DefaultHttpClient();
         httpclient.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
 
-        HttpPost httppost = new HttpPost("https://www.metamind.io/vision/classify");
+        HttpPost httppost = new HttpPost(uri);
+        httppost.setHeader("Authorization", apiKey);
 
-        MultipartEntity mpEntity = new MultipartEntity();
-        ContentBody cbFile = new FileBody(temp_picture, "image/jpeg");
-        mpEntity.addPart("userfile", cbFile);
+        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+        nameValuePairs.add(new BasicNameValuePair("classifier_id", "general"));
+        nameValuePairs.add(new BasicNameValuePair("image_url", imgSource));
 
+        //ContentBody cbFile = new FileBody(temp_picture, contentType);
 
-        httppost.setEntity(mpEntity);
+        try {
+            httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         System.out.println("executing request " + httppost.getRequestLine());
 
         try {

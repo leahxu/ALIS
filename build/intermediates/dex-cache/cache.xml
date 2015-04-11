@@ -15,5 +15,12 @@
         sha1="7800973ef52ae629978ad974370b6a0b9bc79e25">
         <dex dex="/Users/leahxu/git/Cardboard Version/app/build/intermediates/pre-dexed/debug/cardboard-197b011caa93bb281f4905b924b7b68f73a358ca.jar" />
     </item>
+    <item
+        jar="/Users/leahxu/git/Cardboard Version/app/libs/httpmime-4.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="9ded70b76b604f4b4b499cb15a6f7cd4ce490ba0">
+        <dex dex="/Users/leahxu/git/Cardboard Version/app/build/intermediates/pre-dexed/debug/httpmime-4.0-8da2016c0b5e7abfa3d2bf31c4eb70b1abd657b4.jar" />
+    </item>
 
 </items>
