@@ -82,6 +82,7 @@ import org.json.JSONObject;
 /**
  * A Cardboard sample application.
  */
+
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer, OnFrameAvailableListener {
 
     public static final int MEDIA_TYPE_IMAGE = 1;
@@ -154,6 +155,34 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         }
 
         return mediaFile;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(camera==null) {
+            camera = Camera.open();
+            try {
+                camera.setPreviewTexture(surface);
+                camera.startPreview();
+            } catch (IOException ioe) {
+                Log.w("MainActivity", "CAM LAUNCH FAILED");
+            }
+
+        }
+
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        releaseCamera();              // release the camera immediately on pause event
+    }
+
+    private void releaseCamera(){
+        if (camera != null){
+            camera.release();        // release the camera for other applications
+            camera = null;
+        }
     }
 
     private final String vertexShaderCode =
@@ -241,6 +270,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         surface = new SurfaceTexture(texture);
         surface.setOnFrameAvailableListener(this);
 
+        if(camera== null)
         camera = Camera.open();
 
         try {
