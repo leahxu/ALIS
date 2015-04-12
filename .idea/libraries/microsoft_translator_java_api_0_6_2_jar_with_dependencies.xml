@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="microsoft-translator-java-api-0.6.2-jar-with-dependencies">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/libs/microsoft-translator-java-api-0.6.2-jar-with-dependencies.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
