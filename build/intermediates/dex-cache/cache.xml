@@ -22,5 +22,12 @@
         sha1="9ded70b76b604f4b4b499cb15a6f7cd4ce490ba0">
         <dex dex="/Users/brentschlotfeldt/AndroidStudioProjects/newdir/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/httpmime-4.0-a88a12838f6b2ed42a5de4a9f25018773cf31440.jar" />
     </item>
+    <item
+        jar="/Users/brentschlotfeldt/AndroidStudioProjects/newdir/CardboardImageTranslator/app/libs/org.apache.commons.io.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="b90b6ac57cf27a2858eaa490d02ba7945d18ca7b">
+        <dex dex="/Users/brentschlotfeldt/AndroidStudioProjects/newdir/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/org.apache.commons.io-30d2e262adb333db51c3bced07cdd4a8636fcf42.jar" />
+    </item>
 
 </items>

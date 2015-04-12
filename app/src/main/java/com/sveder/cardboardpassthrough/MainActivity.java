@@ -17,14 +17,18 @@
 package com.sveder.cardboardpassthrough;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.SurfaceTexture;
 import android.graphics.SurfaceTexture.OnFrameAvailableListener;
 import android.hardware.Camera;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Vibrator;
+import android.util.Base64;
 import android.util.Log;
 
 import com.google.vrtoolkit.cardboard.*;
@@ -33,32 +37,42 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
 /**
  * A Cardboard sample application.
@@ -70,7 +84,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private static final String TAG = "MainActivity";
     private static final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
     File temp_picture;
+    FileDescriptor Fd;
     private Camera camera;
+
 
     private Camera.PictureCallback mPicture =
             new Camera.PictureCallback() {
@@ -79,25 +95,28 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 public void onPictureTaken(byte[] data, Camera camera) {
 
                     temp_picture = getOutputMediaFile(MEDIA_TYPE_IMAGE);
-                    if (temp_picture == null){
+                    if (temp_picture == null) {
                         Log.d(TAG, "Error creating media file, check storage permissions");
                         return;
                     }
+                    try {
+                        FileOutputStream fos = new FileOutputStream(temp_picture);
+                        fos.write(data);
+                        Fd = fos.getFD();
+                        fos.close();
 
-            try {
-                FileOutputStream fos = new FileOutputStream(temp_picture);
-                fos.write(data);
-                fos.close();
-            } catch (FileNotFoundException e) {
-                Log.d(TAG, "File not found: " + e.getMessage());
-            } catch (IOException e) {
-                Log.d(TAG, "Error accessing file: " + e.getMessage());
-            }
-
-            camera.startPreview();
+                    } catch (FileNotFoundException e) {
+                        Log.d(TAG, "File not found: " + e.getMessage());
+                    } catch (IOException e) {
+                        Log.d(TAG, "Error accessing file: " + e.getMessage());
+                    }
+                    AsyncCallWS task = new AsyncCallWS();
+                    task.execute();
+                    camera.startPreview();
                 }
             };
-    private static File getOutputMediaFile(int type){
+
+    private static File getOutputMediaFile(int type) {
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
 
@@ -107,10 +126,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         // between applications and persist after your app has been uninstalled.
 
         // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
                 Log.d("MyCameraApp", "failed to create directory");
-                Log.e("Derp2","Media File Created");
+                Log.e("Derp2", "Media File Created");
 
                 return null;
             }
@@ -119,14 +138,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         // Create a media file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         File mediaFile;
-        if (type == MEDIA_TYPE_IMAGE){
+        if (type == MEDIA_TYPE_IMAGE) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_"+ timeStamp + ".jpg");
-        } else if(type == MEDIA_TYPE_VIDEO) {
+                    "IMG_" + timeStamp + ".jpg");
+        } else if (type == MEDIA_TYPE_VIDEO) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "VID_"+ timeStamp + ".mp4");
+                    "VID_" + timeStamp + ".mp4");
         } else {
-            Log.e("Derp1","Media File Created");
+            Log.e("Derp1", "Media File Created");
 
             return null;
         }
@@ -250,7 +269,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     /**
      * Converts a raw text file, saved as a resource, into an OpenGL ES shader
      *
-     * @param type  The type of shader we will be creating.
+     * @param type The type of shader we will be creating.
      * @return
      */
     private int loadGLShader(int type, String code) {
@@ -574,9 +593,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
      * Increment the score, hide the object, and give feedback if the user pulls the magnet while
      * looking at the object. Otherwise, remind the user what to do.
      */
+
     @Override
     public void onCardboardTrigger() {
-        Log.i(TAG, "onCardboardTrigger");
+        Log.e(TAG, "onCardboardTrigger");
 
         mOverlayView.show3DToast("Capturing Object");
         try {
@@ -587,47 +607,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         }
 
 
-
-
-
-        // Authorization: Basic dEGa15gLOpEfua3MckyEXCz9MgzfzT48QEmte7wDCjeaPPtJBZ
-/*
-        HttpClient httpclient = new DefaultHttpClient();
-        httpclient.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
-
-        HttpPost httppost = new HttpPost("https://www.metamind.io/vision/classify");
-
-        MultipartEntity mpEntity = new MultipartEntity();
-        ContentBody cbFile = new FileBody(temp_picture, "image/jpeg");
-        mpEntity.addPart("userfile", cbFile);
-
-
-        httppost.setEntity(mpEntity);
-        System.out.println("executing request " + httppost.getRequestLine());
-
-        try {
-            HttpResponse response = httpclient.execute(httppost);
-            HttpEntity resEntity = response.getEntity();
-            System.out.println(response.getStatusLine());
-            if (resEntity != null) {
-                System.out.println(EntityUtils.toString(resEntity));
-            }
-            if (resEntity != null) {
-                resEntity.consumeContent();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        httpclient.getConnectionManager().shutdown();
-
-       // Always give user feedback
-        mVibrator.vibrate(50);*/
+        // Always give user feedback
+        mVibrator.vibrate(50);
     }
 
 
     /**
      * Check if user is looking at object by calculating where the object is in eye-space.
+     *
      * @return
      */
 //    private boolean isLookingAtObject() {
@@ -662,4 +649,64 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         camera.startPreview();
     }
     */
+
+    private class AsyncCallWS extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... values) {
+            Log.e(TAG, "doInBackground");
+            String apiKey = "dEGa15gLOpEfua3MckyEXCz9MgzfzT48QEmte7wDCjeaPPtJBZ";
+            String url = "https://www.petfinder.com/wp-content/uploads/2012/11/dog-how-to-select-your-new-best-friend-thinkstock99062463.jpg";
+            String result = classifyImage(apiKey, "imagenet-1k-net", url);
+            Log.e("Metamind", "Finished network task");
+            Log.e("Metamind:", result);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            Log.e(TAG, "onPostExecute");
+        }
+
+        @Override
+        protected void onPreExecute() {
+            Log.e(TAG, "onPreExecute");
+        }
+
+        public String classifyImage(String apiKey, String classifierId,
+                                    String source) {
+
+            Bitmap bm = BitmapFactory.decodeFile(temp_picture.getPath());
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
+            byte[] b = baos.toByteArray();
+            String ba = Base64.encodeToString(b, Base64.DEFAULT);
+            String img = "<img = " + ba + "/>";
+            Log.e("Metamind", ba);
+            Runtime runtime = Runtime.getRuntime();
+            Process process;
+            String jsonResult = null;
+
+            String cmds[] = {
+                    "curl",
+                    "-H",
+                    "Authorization: Basic " + apiKey,
+                    "-d",
+                    "{\"classifier_id\":\"" + classifierId + "\",\"image_url\":\"" + img
+                            + "\"}", "https://www.metamind.io/vision/classify"};
+
+            try {
+                process = runtime.exec(cmds);
+                jsonResult = IOUtils.toString(process.getInputStream(), "UTF8");
+
+                int resultCode = process.waitFor();
+                assert resultCode == 0;
+                Log.e("DERP DERP", "DEBUG WOOT");
+            } catch (Throwable cause) {
+// process cause
+            }
+
+            return jsonResult;
+        }
+    }
 }
