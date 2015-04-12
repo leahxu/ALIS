@@ -556,7 +556,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                     Log.e("Metamind CLASS NAME", answer);
                     Log.e("Translated Metamind", translatedAnswer);
 
-                    return translatedAnswer;
+                    return answer;
                 } catch (JSONException e) {
                     e.printStackTrace();
                 } catch (Exception e) {

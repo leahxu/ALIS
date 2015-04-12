@@ -2,6 +2,20 @@
 <items version="2" >
 
     <item
+        jar="/Users/leahxu/git/CardboardImageTranslator/app/libs/microsoft-translator-java-api-0.6.2-jar-with-dependencies.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="d60939a936405b0b2a51878665c9a8bbd6672414">
+        <dex dex="/Users/leahxu/git/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/microsoft-translator-java-api-0.6.2-jar-with-dependencies-6ffbc86431c91db0cb337372ddcb2ba9579fbba8.jar" />
+    </item>
+    <item
+        jar="/Users/leahxu/git/CardboardImageTranslator/app/libs/httpmime-4.0.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="9ded70b76b604f4b4b499cb15a6f7cd4ce490ba0">
+        <dex dex="/Users/leahxu/git/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/httpmime-4.0-a38e7f862ffbdfb4ef22d1031a8ca33cd2452c4d.jar" />
+    </item>
+    <item
         jar="/Users/leahxu/Library/Android/sdk/extras/android/m2repository/com/android/support/support-v4/18.0.0/support-v4-18.0.0.jar"
         jumboMode="false"
         revision="21.1.2"
@@ -21,20 +35,6 @@
         revision="21.1.2"
         sha1="7800973ef52ae629978ad974370b6a0b9bc79e25">
         <dex dex="/Users/leahxu/git/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/cardboard-d4c622742ff66c6c4b8069969a775ebad21711ce.jar" />
-    </item>
-    <item
-        jar="/Users/leahxu/git/CardboardImageTranslator/app/libs/httpmime-4.0.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="9ded70b76b604f4b4b499cb15a6f7cd4ce490ba0">
-        <dex dex="/Users/leahxu/git/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/httpmime-4.0-a38e7f862ffbdfb4ef22d1031a8ca33cd2452c4d.jar" />
-    </item>
-    <item
-        jar="/Users/leahxu/git/CardboardImageTranslator/app/libs/microsoft-translator-java-api-0.6.2-jar-with-dependencies.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="d60939a936405b0b2a51878665c9a8bbd6672414">
-        <dex dex="/Users/leahxu/git/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/microsoft-translator-java-api-0.6.2-jar-with-dependencies-6ffbc86431c91db0cb337372ddcb2ba9579fbba8.jar" />
     </item>
 
 </items>
