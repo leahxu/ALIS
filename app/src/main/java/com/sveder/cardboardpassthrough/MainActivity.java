@@ -326,18 +326,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         cardboardView.setRenderer(this);
         setCardboardView(cardboardView);
 
-//        mModelCube = new float[16];
         mCamera = new float[16];
         mView = new float[16];
-//        mModelViewProjection = new float[16];
-//        mModelView = new float[16];
-//        mModelFloor = new float[16];
-//        mHeadView = new float[16];
         mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 //
 //
         mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
-        mOverlayView.show3DToast("Pull the magnet when you find an object.");
+        mOverlayView.show3DToast("Pull the magnet to identify an object in English");
     }
 
     @Override
@@ -391,93 +386,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         texture = createTexture();
         startCamera(texture);
-
-
-//        ByteBuffer bbVertices = ByteBuffer.allocateDirect(DATA.CUBE_COORDS.length * 4);
-//        bbVertices.order(ByteOrder.nativeOrder());
-//        mCubeVertices = bbVertices.asFloatBuffer();
-//        mCubeVertices.put(DATA.CUBE_COORDS);
-//        mCubeVertices.position(0);
-//
-//        ByteBuffer bbColors = ByteBuffer.allocateDirect(DATA.CUBE_COLORS.length * 4);
-//        bbColors.order(ByteOrder.nativeOrder());
-//        mCubeColors = bbColors.asFloatBuffer();
-//        mCubeColors.put(DATA.CUBE_COLORS);
-//        mCubeColors.position(0);
-//
-//        ByteBuffer bbFoundColors = ByteBuffer.allocateDirect(DATA.CUBE_FOUND_COLORS.length * 4);
-//        bbFoundColors.order(ByteOrder.nativeOrder());
-//        mCubeFoundColors = bbFoundColors.asFloatBuffer();
-//        mCubeFoundColors.put(DATA.CUBE_FOUND_COLORS);
-//        mCubeFoundColors.position(0);
-//
-//        ByteBuffer bbNormals = ByteBuffer.allocateDirect(DATA.CUBE_NORMALS.length * 4);
-//        bbNormals.order(ByteOrder.nativeOrder());
-//        mCubeNormals = bbNormals.asFloatBuffer();
-//        mCubeNormals.put(DATA.CUBE_NORMALS);
-//        mCubeNormals.position(0);
-//
-//        // make a floor
-//        ByteBuffer bbFloorVertices = ByteBuffer.allocateDirect(DATA.FLOOR_COORDS.length * 4);
-//        bbFloorVertices.order(ByteOrder.nativeOrder());
-//        mFloorVertices = bbFloorVertices.asFloatBuffer();
-//        mFloorVertices.put(DATA.FLOOR_COORDS);
-//        mFloorVertices.position(0);
-//
-//        ByteBuffer bbFloorNormals = ByteBuffer.allocateDirect(DATA.FLOOR_NORMALS.length * 4);
-//        bbFloorNormals.order(ByteOrder.nativeOrder());
-//        mFloorNormals = bbFloorNormals.asFloatBuffer();
-//        mFloorNormals.put(DATA.FLOOR_NORMALS);
-//        mFloorNormals.position(0);
-//
-//        ByteBuffer bbFloorColors = ByteBuffer.allocateDirect(DATA.FLOOR_COLORS.length * 4);
-//        bbFloorColors.order(ByteOrder.nativeOrder());
-//        mFloorColors = bbFloorColors.asFloatBuffer();
-//        mFloorColors.put(DATA.FLOOR_COLORS);
-//        mFloorColors.position(0);
-//
-//        int vertexShader = loadGLShader(GLES20.GL_VERTEX_SHADER, R.raw.light_vertex);
-//        int gridShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.grid_fragment);
-//
-//        mGlProgram = GLES20.glCreateProgram();
-//        GLES20.glAttachShader(mGlProgram, vertexShader);
-//        GLES20.glAttachShader(mGlProgram, gridShader);
-//        GLES20.glLinkProgram(mGlProgram);
-//
-//        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-//
-//        // Object first appears directly in front of user
-//        Matrix.setIdentityM(mModelCube, 0);
-//        Matrix.translateM(mModelCube, 0, 0, 0, -mObjectDistance);
-//
-//        Matrix.setIdentityM(mModelFloor, 0);
-//        Matrix.translateM(mModelFloor, 0, 0, -mFloorDepth, 0); // Floor appears below user
-//
-//        checkGLError("onSurfaceCreated");
     }
 
-//    /**
-//     * Converts a raw text file into a string.
-//     * @param resId The resource ID of the raw text file about to be turned into a shader.
-//     * @return
-//     */
-//    private String readRawTextFile(int resId) {
-//        InputStream inputStream = getResources().openRawResource(resId);
-//        try {
-//            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-//            StringBuilder sb = new StringBuilder();
-//            String line;
-//            while ((line = reader.readLine()) != null) {
-//                sb.append(line).append("\n");
-//            }
-//            reader.close();
-//            return sb.toString();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return "";
-//    }
-//
 
     /**
      * Prepares OpenGL ES before we draw a frame.
@@ -486,23 +396,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
      */
     @Override
     public void onNewFrame(HeadTransform headTransform) {
-//        GLES20.glUseProgram(mGlProgram);
-//
-//        mModelViewProjectionParam = GLES20.glGetUniformLocation(mGlProgram, "u_MVP");
-//        mLightPosParam = GLES20.glGetUniformLocation(mGlProgram, "u_LightPos");
-//        mModelViewParam = GLES20.glGetUniformLocation(mGlProgram, "u_MVMatrix");
-//        mModelParam = GLES20.glGetUniformLocation(mGlProgram, "u_Model");
-//        mIsFloorParam = GLES20.glGetUniformLocation(mGlProgram, "u_IsFloor");
-//
-//        // Build the Model part of the ModelView matrix.
-//        Matrix.rotateM(mModelCube, 0, TIME_DELTA, 0.5f, 0.5f, 1.0f);
-//
-//        // Build the camera matrix and apply it to the ModelView.
-//        Matrix.setLookAtM(mCamera, 0, 0.0f, 0.0f, CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-//
-//        headTransform.getHeadView(mHeadView, 0);
-//
-//        checkGLError("onReadyToDraw");
 
         float[] mtx = new float[16];
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
@@ -558,34 +451,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         Matrix.multiplyMM(mView, 0, transform.getEyeView(), 0, mCamera, 0);
 
 
-//        mPositionParam = GLES20.glGetAttribLocation(mGlProgram, "a_Position");
-//        mNormalParam = GLES20.glGetAttribLocation(mGlProgram, "a_Normal");
-//        mColorParam = GLES20.glGetAttribLocation(mGlProgram, "a_Color");
-//
-//        GLES20.glEnableVertexAttribArray(mPositionParam);
-//        GLES20.glEnableVertexAttribArray(mNormalParam);
-//        GLES20.glEnableVertexAttribArray(mColorParam);
-//        checkGLError("mColorParam");
-//
-//        // Apply the eye transformation to the camera.
-//        Matrix.multiplyMM(mView, 0, transform.getEyeView(), 0, mCamera, 0);
-//
-//        // Set the position of the light
-//        Matrix.multiplyMV(mLightPosInEyeSpace, 0, mView, 0, mLightPosInWorldSpace, 0);
-//        GLES20.glUniform3f(mLightPosParam, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1],
-//                mLightPosInEyeSpace[2]);
-//
-//        // Build the ModelView and ModelViewProjection matrices
-//        // for calculating cube position and light.
-//        Matrix.multiplyMM(mModelView, 0, mView, 0, mModelCube, 0);
-//        Matrix.multiplyMM(mModelViewProjection, 0, transform.getPerspective(), 0, mModelView, 0);
-//        drawCube();
-//
-//        // Set mModelView for the floor, so we draw floor in the correct location
-//        Matrix.multiplyMM(mModelView, 0, mView, 0, mModelFloor, 0);
-//        Matrix.multiplyMM(mModelViewProjection, 0, transform.getPerspective(), 0,
-//            mModelView, 0);
-//        drawFloor(transform.getPerspective());
+
     }
 
     @Override
@@ -593,15 +459,15 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     }
 
     /**
-     * Increment the score, hide the object, and give feedback if the user pulls the magnet while
-     * looking at the object. Otherwise, remind the user what to do.
+     Take picture and use MetaMind API to perform image classification, and then display the
+     classification of the image to the user.
      */
 
     @Override
     public void onCardboardTrigger() {
         Log.e(TAG, "onCardboardTrigger");
 
-        // mOverlayView.show3DToast("Capturing Object");
+         mOverlayView.show3DToast("Identifying...");
         try {
             camera.takePicture(null, null, mPicture);
         } catch (Exception e) {
@@ -614,44 +480,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     }
 
 
-    /**
-     * Check if user is looking at object by calculating where the object is in eye-space.
-     *
-     * @return
-     */
-//    private boolean isLookingAtObject() {
-//        float[] initVec = {0, 0, 0, 1.0f};
-//        float[] objPositionVec = new float[4];
-//
-//        // Convert object space to camera space. Use the headView from onNewFrame.
-//        Matrix.multiplyMM(mModelView, 0, mHeadView, 0, mModelCube, 0);
-//        Matrix.multiplyMV(objPositionVec, 0, mModelView, 0, initVec, 0);
-//
-//        float pitch = (float)Math.atan2(objPositionVec[1], -objPositionVec[2]);
-//        float yaw = (float)Math.atan2(objPositionVec[0], -objPositionVec[2]);
-//
-//        Log.i(TAG, "Object position: X: " + objPositionVec[0]
-//                + "  Y: " + objPositionVec[1] + " Z: " + objPositionVec[2]);
-//        Log.i(TAG, "Object Pitch: " + pitch +"  Yaw: " + yaw);
-//
-//        return (Math.abs(pitch) < PITCH_LIMIT) && (Math.abs(yaw) < YAW_LIMIT);
-//    }
-/*
-    public void onPause() {
-        camera.stopPreview();
-        camera.release();
-        super.onPause();
-    }
-    public void onResume() {
-        super.onResume();
-
-        if (camera == null) {
-            camera = Camera.open();
-        }
-        camera.startPreview();
-    }
-    */
-
     private class AsyncCallWS extends AsyncTask<Void, Void, String> {
 
         String prediction = "";
@@ -659,17 +487,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         @Override
         protected String doInBackground(Void... values) {
             Log.e(TAG, "doInBackground");
-            String apiKey = "dEGa15gLOpEfua3MckyEXCz9MgzfzT48QEmte7wDCjeaPPtJBZ";
-            String url = "https://www.petfinder.com/wp-content/uploads/2012/11/dog-how-to-select-your-new-best-friend-thinkstock99062463.jpg";
-            /*String result = classifyImage(apiKey, "imagenet-1k-net", url);
-            if (result !=null) {
-                Log.e("Metamind", result.getClass().toString());
-                if (result.equals("")) {
-                    Log.e("Metamind", "Result is empty");
-                }
-                Log.e("Metamind", "Finished network task");
-                Log.e("Metamind:", "Result is: "+result);
-            }*/
             return postData();
         }
 
@@ -717,7 +534,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 }
                 String message = object.toString();
                 httppost.setEntity(new StringEntity(message, "UTF8"));
-                // httppost.setHeader("Content-type", "application/json");
 
                 // Execute HTTP Post Request
                 HttpResponse response = httpclient.execute(httppost);
