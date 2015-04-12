@@ -16,8 +16,12 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true" />
 
-    
-    
-        
 
-</RelativeLayout><!-- From: file:/Users/leahxu/git/CardboardImageTranslator/app/src/main/res/layout/activity_main.xml -->
+    <org.opencv.android.JavaCameraView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/color_blob_detection_activity_surface_view" />
+
+
+
+</RelativeLayout><!-- From: file:/Users/brentschlotfeldt/AndroidStudioProjects/newdir/CardboardImageTranslator/app/src/main/res/layout/activity_main.xml -->

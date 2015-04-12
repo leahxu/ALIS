@@ -16,8 +16,12 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true" />
 
-    
-    
-        
+
+    <org.opencv.android.JavaCameraView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/color_blob_detection_activity_surface_view" />
+
+
 
 </RelativeLayout>

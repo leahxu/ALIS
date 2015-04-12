@@ -34,6 +34,10 @@ import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 
 import com.google.vrtoolkit.cardboard.CardboardActivity;
 import com.google.vrtoolkit.cardboard.CardboardView;
@@ -52,6 +56,19 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -63,7 +80,9 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Scanner;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -74,8 +93,10 @@ import javax.microedition.khronos.opengles.GL10;
  * A Cardboard sample application.
  */
 
-public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer, OnFrameAvailableListener {
+public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer, OnFrameAvailableListener,
+        CameraBridgeViewBase.CvCameraViewListener2, View.OnTouchListener {
 
+    /* Required for basic app */
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
     private static final String TAG = "MainActivity";
@@ -83,6 +104,43 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     File temp_picture;
     private Camera camera;
 
+
+    /* Required for gestures with opencv */
+   // private static final String  TAG = "OCVSample::Activity";
+
+    private boolean              mIsColorSelected1 = false;
+    private boolean              mIsColorSelected2 = false;
+    private Mat mRgba;
+    private Scalar               mBlobColorRgba1;
+    private Scalar               mBlobColorRgba2;
+    private Scalar               mBlobColorHsv1;
+    private ColorBlobDetector    mDetector1;
+    private Scalar mBlobColorHsv2;
+    private ColorBlobDetector    mDetector2;
+    private Mat                  mSpectrum;
+    private Size SPECTRUM_SIZE;
+    private Scalar               CONTOUR_COLOR;
+    private boolean               trigger=false;
+    private int              threshold = 10;
+    private CameraBridgeViewBase mOpenCvCameraView;
+
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS:
+                {
+                    Log.e(TAG, "OpenCV loaded successfully");
+                    mOpenCvCameraView.enableView();
+                    mOpenCvCameraView.setOnTouchListener(MainActivity.this);
+                } break;
+                default:
+                {
+                    super.onManagerConnected(status);
+                } break;
+            }
+        }
+    };
     private Camera.PictureCallback mPicture =
             new Camera.PictureCallback() {
 
@@ -146,7 +204,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     @Override
     protected void onResume() {
         super.onResume();
-
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
         if (camera == null) {
             camera = Camera.open();
             try {
@@ -331,7 +389,17 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        setContentView(R.layout.color_blob_detection_activity_surface_view);
 
+
+        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.color_blob_detection_activity_surface_view);
+        mOpenCvCameraView.setCvCameraViewListener(this);
+
+    }
+
+    public void createARView() {
         setContentView(R.layout.common_ui);
         cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
         cardboardView.setRenderer(this);
@@ -473,6 +541,216 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         mVibrator.vibrate(50);
     }
 
+    @Override
+    public void onCameraViewStarted(int width, int height) {
+        mRgba = new Mat(height, width, CvType.CV_8UC4);
+        mDetector1 = new ColorBlobDetector();
+        mDetector2 = new ColorBlobDetector();
+        mSpectrum = new Mat();
+        mBlobColorRgba1 = new Scalar(255);
+        mBlobColorRgba2 = new Scalar(255);
+        mBlobColorHsv1 = new Scalar(255);
+        mBlobColorHsv2 = new Scalar(255);
+        SPECTRUM_SIZE = new Size(200, 64);
+        CONTOUR_COLOR = new Scalar(255,0,0,255);
+    }
+
+    @Override
+    public void onCameraViewStopped() {
+        mRgba.release();
+    }
+
+    @Override
+    public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+        mRgba = inputFrame.rgba();
+
+        mDetector1.process(mRgba);
+        List<MatOfPoint> contours1 = mDetector1.getContours();
+
+        List<Integer> points1 = new ArrayList<Integer>();
+        for (int i = 0; i < contours1.size(); i++){
+            int x1 = 0;
+            int y1=0;
+            int count = 0;
+            List<Point> points = contours1.get(i).toList();
+            for (Point p: points) {
+                x1+=p.x;
+                y1+=p.y;
+                count ++;
+            }
+            List<Integer> list = new ArrayList<Integer>();
+            list.add(x1/count);
+            list.add(y1/count);
+            list.add(count);
+            if (points1.isEmpty()||list.get(2)>points1.get(2)){
+                points1 = list;
+            }
+        }
+
+        if(points1.size()!= 0) {
+            Log.e("Contour 1", points1.toString());
+        }
+
+        mDetector2.process(mRgba);
+        List<MatOfPoint> contours2 = mDetector2.getContours();
+
+        List<Integer> points2 = new ArrayList<Integer>();
+        for (int i = 0; i < contours2.size(); i++){
+            int x1 = 0;
+            int y1=0;
+            int count = 0;
+            List<Point> points = contours2.get(i).toList();
+            for (Point p: points) {
+                x1+=p.x;
+                y1+=p.y;
+                count ++;
+            }
+            List<Integer> list = new ArrayList<Integer>();
+            list.add(x1/count);
+            list.add(y1/count);
+            list.add(count);
+
+            if (points2.isEmpty()||list.get(2)>points2.get(2)){
+                points2 = list;
+            }
+
+        }
+
+        if(points2.size()!= 0) {
+            Log.e("Contour 2", points2.toString());
+        }
+        boolean trigger = false;
+
+        if (!points1.isEmpty()&& !points2.isEmpty() && points2.get(2)> threshold && points1.get(2)>threshold){
+            trigger = true;
+            mOverlayView.show3DToast("Found Gesture!");
+
+            Log.e("FOUND 2 POINTS!!, ","count: 2");
+        }else{
+            trigger = false;
+            Log.e("UNABLE TO DETECT POINTS", "NOTHING");
+        }
+
+        Log.e(TAG, "Contours 1 count: " + contours1.size());
+        Log.e(TAG, "Contours 2 count: " + contours2.size());
+
+        Imgproc.drawContours(mRgba, contours1, -1, CONTOUR_COLOR);
+        Imgproc.drawContours(mRgba, contours2, -1, CONTOUR_COLOR);
+
+        //Mat colorLabel = mRgba.submat(4, 68, 4, 68);
+        //colorLabel.setTo(mBlobColorRgba);
+
+        // Mat spectrumLabel = mRgba.submat(4, 4 + mSpectrum.rows(), 70, 70 + mSpectrum.cols());
+        // mSpectrum.copyTo(spectrumLabel);
+
+        return mRgba;    }
+
+    private Scalar converScalarHsv2Rgba(Scalar hsvColor) {
+        Mat pointMatRgba = new Mat();
+        Mat pointMatHsv = new Mat(1, 1, CvType.CV_8UC3, hsvColor);
+        Imgproc.cvtColor(pointMatHsv, pointMatRgba, Imgproc.COLOR_HSV2RGB_FULL, 4);
+
+        return new Scalar(pointMatRgba.get(0, 0));
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent event) {
+        if (mIsColorSelected1 == false) {
+            int cols = mRgba.cols();
+            int rows = mRgba.rows();
+
+            int xOffset = (mOpenCvCameraView.getWidth() - cols) / 2;
+            int yOffset = (mOpenCvCameraView.getHeight() - rows) / 2;
+
+            int x = (int) event.getX() - xOffset;
+            int y = (int) event.getY() - yOffset;
+
+            Log.e(TAG, "Touch image coordinates: (" + x + ", " + y + ")");
+
+            if ((x < 0) || (y < 0) || (x > cols) || (y > rows)) return false;
+
+            Rect touchedRect = new Rect();
+
+            touchedRect.x = (x > 4) ? x - 4 : 0;
+            touchedRect.y = (y > 4) ? y - 4 : 0;
+
+            touchedRect.width = (x + 4 < cols) ? x + 4 - touchedRect.x : cols - touchedRect.x;
+            touchedRect.height = (y + 4 < rows) ? y + 4 - touchedRect.y : rows - touchedRect.y;
+
+            Mat touchedRegionRgba = mRgba.submat(touchedRect);
+
+            Mat touchedRegionHsv = new Mat();
+            Imgproc.cvtColor(touchedRegionRgba, touchedRegionHsv, Imgproc.COLOR_RGB2HSV_FULL);
+
+            // Calculate average color of touched region
+            mBlobColorHsv1 = Core.sumElems(touchedRegionHsv);
+            int pointCount = touchedRect.width * touchedRect.height;
+            for (int i = 0; i < mBlobColorHsv1.val.length; i++)
+                mBlobColorHsv1.val[i] /= pointCount;
+
+            mBlobColorRgba1 = converScalarHsv2Rgba(mBlobColorHsv1);
+
+            Log.e(TAG, "Touched rgba color: (" + mBlobColorRgba1.val[0] + ", " + mBlobColorRgba1.val[1] +
+                    ", " + mBlobColorRgba1.val[2] + ", " + mBlobColorRgba1.val[3] + ")");
+
+            mDetector1.setHsvColor(mBlobColorHsv1);
+
+            Imgproc.resize(mDetector1.getSpectrum(), mSpectrum, SPECTRUM_SIZE);
+
+            mIsColorSelected1 = true;
+
+            touchedRegionRgba.release();
+            touchedRegionHsv.release();
+        } else if (mIsColorSelected2 == false){
+            int cols = mRgba.cols();
+            int rows = mRgba.rows();
+
+            int xOffset = (mOpenCvCameraView.getWidth() - cols) / 2;
+            int yOffset = (mOpenCvCameraView.getHeight() - rows) / 2;
+
+            int x = (int) event.getX() - xOffset;
+            int y = (int) event.getY() - yOffset;
+
+            Log.e(TAG, "Touch image coordinates: (" + x + ", " + y + ")");
+
+            if ((x < 0) || (y < 0) || (x > cols) || (y > rows)) return false;
+
+            Rect touchedRect = new Rect();
+
+            touchedRect.x = (x > 4) ? x - 4 : 0;
+            touchedRect.y = (y > 4) ? y - 4 : 0;
+
+            touchedRect.width = (x + 4 < cols) ? x + 4 - touchedRect.x : cols - touchedRect.x;
+            touchedRect.height = (y + 4 < rows) ? y + 4 - touchedRect.y : rows - touchedRect.y;
+
+            Mat touchedRegionRgba = mRgba.submat(touchedRect);
+
+            Mat touchedRegionHsv = new Mat();
+            Imgproc.cvtColor(touchedRegionRgba, touchedRegionHsv, Imgproc.COLOR_RGB2HSV_FULL);
+
+            // Calculate average color of touched region
+            mBlobColorHsv2 = Core.sumElems(touchedRegionHsv);
+            int pointCount = touchedRect.width * touchedRect.height;
+            for (int i = 0; i < mBlobColorHsv2.val.length; i++)
+                mBlobColorHsv2.val[i] /= pointCount;
+
+            mBlobColorRgba2 = converScalarHsv2Rgba(mBlobColorHsv2);
+
+            Log.e(TAG, "Touched rgba color: (" + mBlobColorRgba2.val[0] + ", " + mBlobColorRgba2.val[1] +
+                    ", " + mBlobColorRgba2.val[2] + ", " + mBlobColorRgba2.val[3] + ")");
+
+            mDetector2.setHsvColor(mBlobColorHsv2);
+
+            Imgproc.resize(mDetector2.getSpectrum(), mSpectrum, SPECTRUM_SIZE);
+
+            mIsColorSelected2 = true;
+
+            touchedRegionRgba.release();
+            touchedRegionHsv.release();
+        }
+        createARView();
+        return false; // don't need subsequent touch events
+    }
 
     private class AsyncCallWS extends AsyncTask<Void, Void, String> {
         @Override

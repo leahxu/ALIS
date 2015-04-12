@@ -90,6 +90,7 @@
     <orderEntry type="library" exported="" name="microsoft-translator-java-api-0.6.2-jar-with-dependencies" level="project" />
     <orderEntry type="library" exported="" name="org.apache.commons.io" level="project" />
     <orderEntry type="library" exported="" name="httpmime-4.0" level="project" />
+    <orderEntry type="module" module-name="openCVLibrary2411" exported="" />
   </component>
 </module>
 
