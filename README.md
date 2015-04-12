@@ -9,16 +9,16 @@ Using Google Cardboard, we create an Augmented Language Immersion System (ALIS).
 
 # Technology 
 
-MetaMind Image Classification - https://www.metamind.io/vision/general
-Microsoft Translator API - http://www.microsoft.com/translator/api.aspx
-Google Cardboard - https://developers.google.com/cardboard/
-Android - https://developer.android.com
-OpenCV - http://opencv.org
+*MetaMind Image Classification - https://www.metamind.io/vision/general
+*Microsoft Translator API - http://www.microsoft.com/translator/api.aspx
+*Google Cardboard - https://developers.google.com/cardboard/
+*Android - https://developer.android.com
+*OpenCV - http://opencv.org
 
 # Contributors 
-Brent Schlotfeldt 
-Kate Tolstaya 
-Leah Xu
+*Brent Schlotfeldt 
+*Kate Tolstaya 
+*Leah Xu
 
 Created at University of Maryland, College Park's hackathon Bitcamp 2015. 
 
