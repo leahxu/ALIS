@@ -70,13 +70,10 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 
-<<<<<<< HEAD
 /**
  * A Cardboard sample application.
  */
 
-=======
->>>>>>> 12ca8d9a72901b63681224c604caae83c28b7f22
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer, OnFrameAvailableListener {
 
     public static final int MEDIA_TYPE_IMAGE = 1;
@@ -149,11 +146,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     @Override
     protected void onResume() {
         super.onResume();
-<<<<<<< HEAD
-        if(camera==null) {
-=======
+
         if (camera == null) {
->>>>>>> 12ca8d9a72901b63681224c604caae83c28b7f22
             camera = Camera.open();
             try {
                 camera.setPreviewTexture(surface);
@@ -165,23 +159,16 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         }
 
     }
-<<<<<<< HEAD
-=======
 
->>>>>>> 12ca8d9a72901b63681224c604caae83c28b7f22
     @Override
     protected void onPause() {
         super.onPause();
         releaseCamera();              // release the camera immediately on pause event
     }
 
-<<<<<<< HEAD
-    private void releaseCamera(){
-        if (camera != null){
-=======
+
     private void releaseCamera() {
         if (camera != null) {
->>>>>>> 12ca8d9a72901b63681224c604caae83c28b7f22
             camera.release();        // release the camera for other applications
             camera = null;
         }
@@ -268,14 +255,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         surface = new SurfaceTexture(texture);
         surface.setOnFrameAvailableListener(this);
 
-<<<<<<< HEAD
-        if(camera== null)
-        camera = Camera.open();
-=======
+
         if (camera == null) {
             camera = Camera.open();
         }
->>>>>>> 12ca8d9a72901b63681224c604caae83c28b7f22
 
         try {
             camera.setPreviewTexture(surface);
@@ -501,6 +484,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         @Override
         protected void onPostExecute(String result) {
             mOverlayView.show3DToast(result);
+
+            // Delete pictures now that web request has been executed
+            temp_picture.delete();
         }
 
         @Override
@@ -564,7 +550,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
                     // Translate an english string to another language, currently Spanish
                     String translatedAnswer = Translate.execute(answer, Language.SPANISH);
-
+                    if (translatedAnswer.equals("")) {
+                        translatedAnswer = answer;
+                    }
                     Log.e("Metamind CLASS NAME", answer);
                     Log.e("Translated Metamind", translatedAnswer);
 
