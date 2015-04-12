@@ -12,6 +12,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * Original camera display code by Sveder's CardboardPassthrough project found
+ * https://github.com/Sveder/CardboardPassthrough
  */
 
 package com.sveder.cardboardpassthrough;
@@ -32,58 +35,48 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 
-import com.google.vrtoolkit.cardboard.*;
+import com.google.vrtoolkit.cardboard.CardboardActivity;
+import com.google.vrtoolkit.cardboard.CardboardView;
+import com.google.vrtoolkit.cardboard.EyeTransform;
+import com.google.vrtoolkit.cardboard.HeadTransform;
+import com.google.vrtoolkit.cardboard.Viewport;
+import com.memetix.mst.language.Language;
+import com.memetix.mst.translate.Translate;
 
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.FileDescriptor;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-import java.util.ArrayList;
-import java.util.Date;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Scanner;
-
-
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.ContentBody;
-import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.CoreProtocolPNames;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Scanner;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
+
+<<<<<<< HEAD
 /**
  * A Cardboard sample application.
  */
 
+=======
+>>>>>>> 12ca8d9a72901b63681224c604caae83c28b7f22
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer, OnFrameAvailableListener {
 
     public static final int MEDIA_TYPE_IMAGE = 1;
@@ -93,13 +86,11 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     File temp_picture;
     private Camera camera;
 
-
     private Camera.PictureCallback mPicture =
             new Camera.PictureCallback() {
 
                 @Override
                 public void onPictureTaken(byte[] data, Camera camera) {
-
                     temp_picture = getOutputMediaFile(MEDIA_TYPE_IMAGE);
                     if (temp_picture == null) {
                         Log.d(TAG, "Error creating media file, check storage permissions");
@@ -124,9 +115,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private static File getOutputMediaFile(int type) {
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
-
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), "MyCameraApp");
+
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
 
@@ -134,8 +125,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
                 Log.d("MyCameraApp", "failed to create directory");
-                Log.e("Derp2", "Media File Created");
-
                 return null;
             }
         }
@@ -151,7 +140,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                     "VID_" + timeStamp + ".mp4");
         } else {
             Log.e("Derp1", "Media File Created");
-
             return null;
         }
 
@@ -161,7 +149,11 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     @Override
     protected void onResume() {
         super.onResume();
+<<<<<<< HEAD
         if(camera==null) {
+=======
+        if (camera == null) {
+>>>>>>> 12ca8d9a72901b63681224c604caae83c28b7f22
             camera = Camera.open();
             try {
                 camera.setPreviewTexture(surface);
@@ -173,14 +165,23 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         }
 
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 12ca8d9a72901b63681224c604caae83c28b7f22
     @Override
     protected void onPause() {
         super.onPause();
         releaseCamera();              // release the camera immediately on pause event
     }
 
+<<<<<<< HEAD
     private void releaseCamera(){
         if (camera != null){
+=======
+    private void releaseCamera() {
+        if (camera != null) {
+>>>>>>> 12ca8d9a72901b63681224c604caae83c28b7f22
             camera.release();        // release the camera for other applications
             camera = null;
         }
@@ -206,11 +207,11 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                     //"  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n" +
                     "}";
 
-    private FloatBuffer vertexBuffer, textureVerticesBuffer, vertexBuffer2;
-    private ShortBuffer drawListBuffer, buf2;
+    private FloatBuffer vertexBuffer, textureVerticesBuffer;
+    private ShortBuffer drawListBuffer;
     private int mProgram;
-    private int mPositionHandle, mPositionHandle2;
     private int mColorHandle;
+    private int mPositionHandle;
     private int mTextureCoordHandle;
 
 
@@ -221,26 +222,24 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             1.0f, -1.0f,   // 1. right - mid
             -1.0f, 1.0f,   // 2. left - top
             1.0f, 1.0f,   // 3. right - top
-//    	 
-//    	 -1.0f, -1.0f, //4. left - bottom
-//    	 1.0f , -1.0f, //5. right - bottom
+
+            //    	 -1.0f, -1.0f, //4. left - bottom
+            //    	 1.0f , -1.0f, //5. right - bottom
 
 
-//       -1.0f, -1.0f,  // 0. left-bottom
-//        0.0f, -1.0f,   // 1. mid-bottom
-//       -1.0f,  1.0f,   // 2. left-top
-//        0.0f,  1.0f,   // 3. mid-top
+            //       -1.0f, -1.0f,  // 0. left-bottom
+            //        0.0f, -1.0f,   // 1. mid-bottom
+            //       -1.0f,  1.0f,   // 2. left-top
+            //        0.0f,  1.0f,   // 3. mid-top
 
-            //1.0f, -1.0f,  // 4. right-bottom
-            //1.0f, 1.0f,   // 5. right-top
+            //        1.0f, -1.0f,  // 4. right-bottom
+            //        1.0f, 1.0f,   // 5. right-top
 
     };
 
 
     //, 1, 4, 3, 4, 5, 3
-//    private short drawOrder[] =  {0, 1, 2, 1, 3, 2 };//, 4, 5, 0, 5, 0, 1 }; // order to draw vertices
     private short drawOrder[] = {0, 2, 1, 1, 2, 3}; // order to draw vertices
-    private short drawOrder2[] = {2, 0, 3, 3, 0, 1}; // order to draw vertices
 
     static float textureVertices[] = {
             0.0f, 1.0f,  // A. left-bottom
@@ -248,15 +247,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             0.0f, 0.0f,  // C. left-top
             1.0f, 0.0f   // D. right-top
 
-//        1.0f,  1.0f,
-//        1.0f,  0.0f,
-//        0.0f,  1.0f,
-//        0.0f,  0.0f
+            //        1.0f,  1.0f,
+            //        1.0f,  0.0f,
+            //        0.0f,  1.0f,
+            //        0.0f,  0.0f
     };
 
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
-
-    private ByteBuffer indexBuffer;    // Buffer for index-array
 
     private int texture;
 
@@ -271,8 +268,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         surface = new SurfaceTexture(texture);
         surface.setOnFrameAvailableListener(this);
 
+<<<<<<< HEAD
         if(camera== null)
         camera = Camera.open();
+=======
+        if (camera == null) {
+            camera = Camera.open();
+        }
+>>>>>>> 12ca8d9a72901b63681224c604caae83c28b7f22
 
         try {
             camera.setPreviewTexture(surface);
@@ -299,12 +302,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         return texture[0];
     }
 
-
     /**
      * Converts a raw text file, saved as a resource, into an OpenGL ES shader
      *
      * @param type The type of shader we will be creating.
-     * @return
      */
     private int loadGLShader(int type, String code) {
         int shader = GLES20.glCreateShader(type);
@@ -331,22 +332,18 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     /**
      * Checks if we've had an error inside of OpenGL ES, and if so what that error is.
-     *
-     * @param func
      */
-    private static void checkGLError(String func) {
-        int error;
-        while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-            Log.e(TAG, func + ": glError " + error);
-            throw new RuntimeException(func + ": glError " + error);
-        }
-    }
+    //private static void checkGLError(String func) {
+    //    int error;
+    //    while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
+    //        Log.e(TAG, func + ": glError " + error);
+    //        throw new RuntimeException(func + ": glError " + error);
+    //    }
+    //}
 
     /**
      * Sets the view to our CardboardView and initializes the transformation matrices we will use
      * to render our scene.
-     *
-     * @param savedInstanceState
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -360,10 +357,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         mCamera = new float[16];
         mView = new float[16];
         mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-//
-//
+
         mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
-        mOverlayView.show3DToast("Pull the magnet to identify an object in English");
+        mOverlayView.show3DToast("Pull magnet to identify object in Spanish! ");
     }
 
     @Override
@@ -393,13 +389,11 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         vertexBuffer.put(squareVertices);
         vertexBuffer.position(0);
 
-
         ByteBuffer dlb = ByteBuffer.allocateDirect(drawOrder.length * 2);
         dlb.order(ByteOrder.nativeOrder());
         drawListBuffer = dlb.asShortBuffer();
         drawListBuffer.put(drawOrder);
         drawListBuffer.position(0);
-
 
         ByteBuffer bb2 = ByteBuffer.allocateDirect(textureVertices.length * 4);
         bb2.order(ByteOrder.nativeOrder());
@@ -427,18 +421,15 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
      */
     @Override
     public void onNewFrame(HeadTransform headTransform) {
-
         float[] mtx = new float[16];
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         surface.updateTexImage();
         surface.getTransformMatrix(mtx);
-
     }
 
     @Override
     public void onFrameAvailable(SurfaceTexture arg0) {
         this.cardboardView.requestRender();
-
     }
 
     /**
@@ -450,18 +441,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     @Override
     public void onDrawEye(EyeTransform transform) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
         GLES20.glUseProgram(mProgram);
-
         GLES20.glActiveTexture(GL_TEXTURE_EXTERNAL_OES);
         GLES20.glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture);
-
 
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "position");
         GLES20.glEnableVertexAttribArray(mPositionHandle);
         GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT,
                 false, vertexStride, vertexBuffer);
-
 
         mTextureCoordHandle = GLES20.glGetAttribLocation(mProgram, "inputTextureCoordinate");
         GLES20.glEnableVertexAttribArray(mTextureCoordHandle);
@@ -470,19 +457,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         mColorHandle = GLES20.glGetAttribLocation(mProgram, "s_texture");
 
-
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.length,
                 GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
-
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
         GLES20.glDisableVertexAttribArray(mTextureCoordHandle);
 
         Matrix.multiplyMM(mView, 0, transform.getEyeView(), 0, mCamera, 0);
-
-
-
     }
 
     @Override
@@ -490,21 +472,19 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     }
 
     /**
-     Take picture and use MetaMind API to perform image classification, and then display the
-     classification of the image to the user.
+     * Take picture and use MetaMind API to perform image classification, and then display the
+     * classification of the image to the user.
      */
-
     @Override
     public void onCardboardTrigger() {
         Log.e(TAG, "onCardboardTrigger");
 
-         mOverlayView.show3DToast("Identifying...");
+        mOverlayView.show3DToast("Identifying...");
         try {
             camera.takePicture(null, null, mPicture);
         } catch (Exception e) {
             Log.e("Take Picture Failed.:", e.getMessage());
         }
-
 
         // Always give user feedback
         mVibrator.vibrate(50);
@@ -512,9 +492,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
 
     private class AsyncCallWS extends AsyncTask<Void, Void, String> {
-
-        String prediction = "";
-
         @Override
         protected String doInBackground(Void... values) {
             Log.e(TAG, "doInBackground");
@@ -524,7 +501,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         @Override
         protected void onPostExecute(String result) {
             mOverlayView.show3DToast(result);
-
         }
 
         @Override
@@ -575,19 +551,29 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 while (sc.hasNextLine()) {
                     jsonString += sc.nextLine();
                 }
-                JSONObject jsonObject = null;
+                JSONObject jsonObject;
                 Log.e("Metamind Results", jsonString);
                 try {
                     jsonObject = new JSONObject(jsonString);
                     JSONArray temp = jsonObject.getJSONArray("predictions");
                     String answer = temp.getJSONObject(0).getString("class_name");
-                    Log.e("Metamind CLASS NAME", answer);
-                    return answer;
 
+                    //Replace client_id and client_secret with your own.
+                    Translate.setClientId("AugmentedLanguageImmersion");
+                    Translate.setClientSecret("sKCdl6p7g8Cxv3X+QsEg58xKkxU8ZD3lGUdHiFDEM5c=");
+
+                    // Translate an english string to another language, currently Spanish
+                    String translatedAnswer = Translate.execute(answer, Language.SPANISH);
+
+                    Log.e("Metamind CLASS NAME", answer);
+                    Log.e("Translated Metamind", translatedAnswer);
+
+                    return translatedAnswer;
                 } catch (JSONException e) {
                     e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-
 
             } catch (ClientProtocolException e) {
                 // TODO Auto-generated catch block

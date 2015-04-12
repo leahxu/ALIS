@@ -2,32 +2,39 @@
 <items version="2" >
 
     <item
-        jar="/Users/brentschlotfeldt/AndroidStudioProjects/newdir/CardboardImageTranslator/app/libs/cardboard.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="7800973ef52ae629978ad974370b6a0b9bc79e25">
-        <dex dex="/Users/brentschlotfeldt/AndroidStudioProjects/newdir/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/cardboard-f60eedc755f5aa9b542604ebd52dd5ccfe8f3a88.jar" />
-    </item>
-    <item
-        jar="/Users/brentschlotfeldt/AndroidStudioProjects/newdir/CardboardImageTranslator/app/libs/org.apache.commons.io.jar"
-        jumboMode="false"
-        revision="21.1.2"
-        sha1="b90b6ac57cf27a2858eaa490d02ba7945d18ca7b">
-        <dex dex="/Users/brentschlotfeldt/AndroidStudioProjects/newdir/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/org.apache.commons.io-30d2e262adb333db51c3bced07cdd4a8636fcf42.jar" />
-    </item>
-    <item
-        jar="/Users/brentschlotfeldt/Development/android-sdk-macosx/extras/android/m2repository/com/android/support/support-v4/18.0.0/support-v4-18.0.0.jar"
+        jar="/Users/leahxu/Library/Android/sdk/extras/android/m2repository/com/android/support/support-v4/18.0.0/support-v4-18.0.0.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="44ec51e9d395a47aab135e5e1b556c0007442156">
-        <dex dex="/Users/brentschlotfeldt/AndroidStudioProjects/newdir/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/support-v4-18.0.0-42ee4519ee6b22d5f1361fe4594875ed72c29242.jar" />
+        <dex dex="/Users/leahxu/git/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/support-v4-18.0.0-c56533ae55bbfd3e651b7ab35d55a4acaf941611.jar" />
     </item>
     <item
-        jar="/Users/brentschlotfeldt/AndroidStudioProjects/newdir/CardboardImageTranslator/app/libs/httpmime-4.0.jar"
+        jar="/Users/leahxu/git/CardboardImageTranslator/app/libs/org.apache.commons.io.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="b90b6ac57cf27a2858eaa490d02ba7945d18ca7b">
+        <dex dex="/Users/leahxu/git/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/org.apache.commons.io-755e740ad4379defb543eac34b45238970489b15.jar" />
+    </item>
+    <item
+        jar="/Users/leahxu/git/CardboardImageTranslator/app/libs/cardboard.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="7800973ef52ae629978ad974370b6a0b9bc79e25">
+        <dex dex="/Users/leahxu/git/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/cardboard-d4c622742ff66c6c4b8069969a775ebad21711ce.jar" />
+    </item>
+    <item
+        jar="/Users/leahxu/git/CardboardImageTranslator/app/libs/httpmime-4.0.jar"
         jumboMode="false"
         revision="21.1.2"
         sha1="9ded70b76b604f4b4b499cb15a6f7cd4ce490ba0">
-        <dex dex="/Users/brentschlotfeldt/AndroidStudioProjects/newdir/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/httpmime-4.0-a88a12838f6b2ed42a5de4a9f25018773cf31440.jar" />
+        <dex dex="/Users/leahxu/git/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/httpmime-4.0-a38e7f862ffbdfb4ef22d1031a8ca33cd2452c4d.jar" />
+    </item>
+    <item
+        jar="/Users/leahxu/git/CardboardImageTranslator/app/libs/microsoft-translator-java-api-0.6.2-jar-with-dependencies.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="d60939a936405b0b2a51878665c9a8bbd6672414">
+        <dex dex="/Users/leahxu/git/CardboardImageTranslator/app/build/intermediates/pre-dexed/debug/microsoft-translator-java-api-0.6.2-jar-with-dependencies-6ffbc86431c91db0cb337372ddcb2ba9579fbba8.jar" />
     </item>
 
 </items>
