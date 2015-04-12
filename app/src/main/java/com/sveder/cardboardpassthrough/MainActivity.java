@@ -658,8 +658,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             String apiKey = "dEGa15gLOpEfua3MckyEXCz9MgzfzT48QEmte7wDCjeaPPtJBZ";
             String url = "https://www.petfinder.com/wp-content/uploads/2012/11/dog-how-to-select-your-new-best-friend-thinkstock99062463.jpg";
             String result = classifyImage(apiKey, "imagenet-1k-net", url);
-            Log.e("Metamind", "Finished network task");
-            Log.e("Metamind:", result);
+            if (result !=null) {
+                Log.e("Metamind", result.getClass().toString());
+                if (result.equals("")) {
+                    Log.e("Metamind", "Result is empty");
+                }
+                Log.e("Metamind", "Finished network task");
+                Log.e("Metamind:", "Result is: "+result);
+            }
             return null;
         }
 
@@ -676,9 +682,17 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         public String classifyImage(String apiKey, String classifierId,
                                     String source) {
 
-            Bitmap bm = BitmapFactory.decodeFile(temp_picture.getPath());
+            // Image Compression settings
+            BitmapFactory.Options opt = new BitmapFactory.Options();
+            opt.inTempStorage = new byte[16*1024];
+            opt.inSampleSize = 4;
+            opt.outWidth = 640;
+            opt.outHeight = 480;
+
+            // Compress the Image
+            Bitmap bm = BitmapFactory.decodeFile(temp_picture.getPath(),opt);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
+            bm.compress(Bitmap.CompressFormat.JPEG, 90, baos); //bm is the bitmap object
             byte[] b = baos.toByteArray();
             String ba = Base64.encodeToString(b, Base64.DEFAULT);
             String img = "<img = " + ba + "/>";
@@ -687,12 +701,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             Process process;
             String jsonResult = null;
 
+            // Run Curl
             String cmds[] = {
                     "curl",
                     "-H",
                     "Authorization: Basic " + apiKey,
                     "-d",
-                    "{\"classifier_id\":\"" + classifierId + "\",\"image_url\":\"" + img
+                    "{\"classifier_id\":\"" + classifierId + "\",\"image_url\":\"" + source
                             + "\"}", "https://www.metamind.io/vision/classify"};
 
             try {
@@ -701,9 +716,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
                 int resultCode = process.waitFor();
                 assert resultCode == 0;
-                Log.e("DERP DERP", "DEBUG WOOT");
+                Log.e("Metamind", "Found a JSON Result");
             } catch (Throwable cause) {
-// process cause
+
+            // process cause
             }
 
             return jsonResult;
