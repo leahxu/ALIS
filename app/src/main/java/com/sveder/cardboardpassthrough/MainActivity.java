@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Scanner;
 
 
 import org.apache.commons.io.IOUtils;
@@ -62,9 +63,11 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
@@ -72,6 +75,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -84,7 +89,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private static final String TAG = "MainActivity";
     private static final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
     File temp_picture;
-    FileDescriptor Fd;
     private Camera camera;
 
 
@@ -102,7 +106,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                     try {
                         FileOutputStream fos = new FileOutputStream(temp_picture);
                         fos.write(data);
-                        Fd = fos.getFD();
                         fos.close();
 
                     } catch (FileNotFoundException e) {
@@ -598,10 +601,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     public void onCardboardTrigger() {
         Log.e(TAG, "onCardboardTrigger");
 
-        mOverlayView.show3DToast("Capturing Object");
+        // mOverlayView.show3DToast("Capturing Object");
         try {
             camera.takePicture(null, null, mPicture);
-            mOverlayView.show3DToast("Take picture SUccess");
         } catch (Exception e) {
             Log.e("Take Picture Failed.:", e.getMessage());
         }
@@ -650,14 +652,16 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     }
     */
 
-    private class AsyncCallWS extends AsyncTask<Void, Void, Void> {
+    private class AsyncCallWS extends AsyncTask<Void, Void, String> {
+
+        String prediction = "";
 
         @Override
-        protected Void doInBackground(Void... values) {
+        protected String doInBackground(Void... values) {
             Log.e(TAG, "doInBackground");
             String apiKey = "dEGa15gLOpEfua3MckyEXCz9MgzfzT48QEmte7wDCjeaPPtJBZ";
             String url = "https://www.petfinder.com/wp-content/uploads/2012/11/dog-how-to-select-your-new-best-friend-thinkstock99062463.jpg";
-            String result = classifyImage(apiKey, "imagenet-1k-net", url);
+            /*String result = classifyImage(apiKey, "imagenet-1k-net", url);
             if (result !=null) {
                 Log.e("Metamind", result.getClass().toString());
                 if (result.equals("")) {
@@ -665,13 +669,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 }
                 Log.e("Metamind", "Finished network task");
                 Log.e("Metamind:", "Result is: "+result);
-            }
-            return null;
+            }*/
+            return postData();
         }
 
         @Override
-        protected void onPostExecute(Void result) {
-            Log.e(TAG, "onPostExecute");
+        protected void onPostExecute(String result) {
+            mOverlayView.show3DToast(result);
+
         }
 
         @Override
@@ -679,50 +684,70 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             Log.e(TAG, "onPreExecute");
         }
 
-        public String classifyImage(String apiKey, String classifierId,
-                                    String source) {
+        public String postData() {
 
-            // Image Compression settings
+
             BitmapFactory.Options opt = new BitmapFactory.Options();
-            opt.inTempStorage = new byte[16*1024];
+            opt.inTempStorage = new byte[16 * 1024];
             opt.inSampleSize = 4;
             opt.outWidth = 640;
             opt.outHeight = 480;
 
             // Compress the Image
-            Bitmap bm = BitmapFactory.decodeFile(temp_picture.getPath(),opt);
+            Bitmap bm = BitmapFactory.decodeFile(temp_picture.getPath(), opt);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bm.compress(Bitmap.CompressFormat.JPEG, 90, baos); //bm is the bitmap object
             byte[] b = baos.toByteArray();
             String ba = Base64.encodeToString(b, Base64.DEFAULT);
-            String img = "<img = " + ba + "/>";
-            Log.e("Metamind", ba);
-            Runtime runtime = Runtime.getRuntime();
-            Process process;
-            String jsonResult = null;
+            String img = "data:image/jpg;base64," + ba;
 
-            // Run Curl
-            String cmds[] = {
-                    "curl",
-                    "-H",
-                    "Authorization: Basic " + apiKey,
-                    "-d",
-                    "{\"classifier_id\":\"" + classifierId + "\",\"image_url\":\"" + source
-                            + "\"}", "https://www.metamind.io/vision/classify"};
+            // Create a new HttpClient and Post Header
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost("https://www.metamind.io/vision/classify");
+            httppost.setHeader("Authorization", "Basic dEGa15gLOpEfua3MckyEXCz9MgzfzT48QEmte7wDCjeaPPtJBZ");
 
             try {
-                process = runtime.exec(cmds);
-                jsonResult = IOUtils.toString(process.getInputStream(), "UTF8");
+                // Add your data
+                JSONObject object = new JSONObject();
+                try {
+                    object.put("classifier_id", "imagenet-1k-net");
+                    object.put("image_url", img);//"https://www.petfinder.com/wp-content/uploads/2012/11/dog-how-to-select-your-new-best-friend-thinkstock99062463.jpg");
+                } catch (Exception ex) {
+                    Log.e("MetaMind", "JSON Object Exception");
+                }
+                String message = object.toString();
+                httppost.setEntity(new StringEntity(message, "UTF8"));
+                // httppost.setHeader("Content-type", "application/json");
 
-                int resultCode = process.waitFor();
-                assert resultCode == 0;
-                Log.e("Metamind", "Found a JSON Result");
-            } catch (Throwable cause) {
+                // Execute HTTP Post Request
+                HttpResponse response = httpclient.execute(httppost);
+                // Get data out of response
+                Scanner sc = new Scanner(response.getEntity().getContent(), "UTF-8");
 
-            // process cause
+                String jsonString = "";
+                while (sc.hasNextLine()) {
+                    jsonString += sc.nextLine();
+                }
+                JSONObject jsonObject = null;
+                Log.e("Metamind Results", jsonString);
+                try {
+                    jsonObject = new JSONObject(jsonString);
+                    JSONArray temp = jsonObject.getJSONArray("predictions");
+                    String answer = temp.getJSONObject(0).getString("class_name");
+                    Log.e("Metamind CLASS NAME", answer);
+                    return answer;
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+            } catch (ClientProtocolException e) {
+                // TODO Auto-generated catch block
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
             }
-
-            return jsonResult;
+            return "Object not found!";
         }
     }
 }
