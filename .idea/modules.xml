@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/CardboardImageTranslator.iml" filepath="$PROJECT_DIR$/CardboardImageTranslator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ALIS.iml" filepath="$PROJECT_DIR$/ALIS.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
 </project>
-

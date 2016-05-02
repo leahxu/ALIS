@@ -1,21 +1,3 @@
-/*
- * Copyright 2014 Google Inc. All Rights Reserved.
-
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * Original camera display code by Sveder's CardboardPassthrough project found
- * https://github.com/Sveder/CardboardPassthrough
- */
 
 package com.sveder.cardboardpassthrough;
 
@@ -34,6 +16,10 @@ import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+//import android.view.MotionEvent;
+//import android.view.View;
 
 import com.google.vrtoolkit.cardboard.CardboardActivity;
 import com.google.vrtoolkit.cardboard.CardboardView;
@@ -342,7 +328,17 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
-        mOverlayView.show3DToast("Pull magnet to identify object in Spanish! ");
+
+        mOverlayView.setOnTouchListener(new View.OnTouchListener()
+        {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                onCardboardTrigger();
+                return false;
+            }
+        });
     }
 
     @Override
@@ -413,6 +409,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     @Override
     public void onFrameAvailable(SurfaceTexture arg0) {
         this.cardboardView.requestRender();
+
+
     }
 
     /**
@@ -549,7 +547,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                     Translate.setClientSecret("sKCdl6p7g8Cxv3X+QsEg58xKkxU8ZD3lGUdHiFDEM5c=");
 
                     // Translate an english string to another language, currently Spanish
-                    String translatedAnswer = Translate.execute(answer, Language.SPANISH);
+                    String translatedAnswer = Translate.execute(answer, mOverlayView.getLanguage());
                     if (translatedAnswer.equals("")) {
                         translatedAnswer = answer;
                     }

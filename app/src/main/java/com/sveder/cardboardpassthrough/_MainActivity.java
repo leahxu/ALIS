@@ -26,6 +26,8 @@ public class _MainActivity extends CardboardActivity implements CardboardView.St
         setCardboardView(cardboardView);
 
 
+
+
     }
 
     @Override
