@@ -33,7 +33,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 
-
 import com.memetix.mst.language.Language;
 
 /**

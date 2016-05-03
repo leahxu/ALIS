@@ -26,5 +26,10 @@ dependencies {
     compile files('libs/httpmime-4.0.jar')
     compile files('libs/org.apache.commons.io.jar')
     compile files('libs/microsoft-translator-java-api-0.6.2-jar-with-dependencies.jar')
+<<<<<<< HEAD
     compile 'com.clarifai:clarifai-api-java:1.2.0'
+=======
+
+
+>>>>>>> origin/master
 }

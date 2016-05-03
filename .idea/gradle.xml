@@ -6,6 +6,10 @@
         <option name="distributionType" value="LOCAL" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="gradleHome" value="C:\Program Files\Android\Android Studio1\gradle\gradle-2.10" />
+<<<<<<< HEAD
+=======
+        <option name="gradleJvm" value="1.8" />
+>>>>>>> origin/master
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />

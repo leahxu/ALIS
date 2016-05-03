@@ -42,6 +42,7 @@
   </component>
   <component name="ProjectType">
     <option name="id" value="Android" />
+<<<<<<< HEAD
   </component>
   <component name="masterDetails">
     <states>
@@ -58,5 +59,7 @@
         </settings>
       </state>
     </states>
+=======
+>>>>>>> origin/master
   </component>
 </project>
