@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ALIS</string>
+    <string name="metamind_auth">"Basic dEGa15gLOpEfua3MckyEXCz9MgzfzT48QEmte7wDCjeaPPtJBZ"</string>
+    <string name="client_id">LbRsbbAdBp_N0GCpbbq_dzacLsHmVYKE5pW8yw_2</string>
+    <string name="client_secret">BjzZEDbz_UfLjHG1askKOI2U8nB4IlhNlCTN59jZ</string>
+
 </resources>

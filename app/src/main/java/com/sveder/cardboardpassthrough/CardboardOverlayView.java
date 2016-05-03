@@ -16,7 +16,9 @@
 
 package com.sveder.cardboardpassthrough;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
@@ -30,6 +32,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+
+
+import com.memetix.mst.language.Language;
+
 /**
  * Contains two sub-views to provide a simple stereo HUD.
  */
@@ -38,6 +44,13 @@ public class CardboardOverlayView extends LinearLayout {
     private final CardboardOverlayEyeView mLeftView;
     private final CardboardOverlayEyeView mRightView;
     private AlphaAnimation mTextFadeAnimation;
+
+
+    private Language lang = Language.SPANISH;
+
+    public Language getLanguage(){
+        return lang;
+    }
 
     public CardboardOverlayView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -62,6 +75,33 @@ public class CardboardOverlayView extends LinearLayout {
 
         mTextFadeAnimation = new AlphaAnimation(1.0f, 0.0f);
         mTextFadeAnimation.setDuration(5000);
+
+        CharSequence colors[] = new CharSequence[] {"Spanish", "French", "German", "Russian"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Welcome to ALIS. I want to learn:");
+        builder.setItems(colors, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //(Button)findViewById(id);
+                switch(which){
+                    case 0:
+                        lang = Language.SPANISH;
+                        break;
+                    case 1:
+                        lang = Language.FRENCH;
+                        break;
+                    case 2:
+                        lang = Language.GERMAN;
+                        break;
+                    case 3:
+                        lang = Language.RUSSIAN;
+                        break;
+                }
+                show3DToast("Pull magnet to identify object in " + lang.name() + "!");
+            }
+        });
+        builder.show();
     }
 
     public void show3DToast(String message) {
@@ -182,5 +222,7 @@ public class CardboardOverlayView extends LinearLayout {
                     (int) leftMargin, (int) topMargin,
                     (int) (leftMargin + width), (int) (topMargin + height * (1.0f - verticalTextPos)));
         }
+
+
     }
 }

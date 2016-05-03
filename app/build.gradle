@@ -1,13 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 17
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 23
+    buildToolsVersion '23.0.3'
+
+    useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         applicationId "com.sveder.cardboardpassthrough"
-        minSdkVersion 16
-        targetSdkVersion 17
+        minSdkVersion 21
+        targetSdkVersion 23
     }
 
     buildTypes {
@@ -19,9 +21,10 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:18.0.0'
+    compile 'com.android.support:support-v4:23.0.0'
     compile files('libs/cardboard.jar')
     compile files('libs/httpmime-4.0.jar')
     compile files('libs/org.apache.commons.io.jar')
     compile files('libs/microsoft-translator-java-api-0.6.2-jar-with-dependencies.jar')
+    compile 'com.clarifai:clarifai-api-java:1.2.0'
 }

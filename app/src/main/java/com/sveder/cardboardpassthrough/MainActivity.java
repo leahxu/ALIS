@@ -1,21 +1,3 @@
-/*
- * Copyright 2014 Google Inc. All Rights Reserved.
-
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * Original camera display code by Sveder's CardboardPassthrough project found
- * https://github.com/Sveder/CardboardPassthrough
- */
 
 package com.sveder.cardboardpassthrough;
 
@@ -28,12 +10,18 @@ import android.hardware.Camera;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Vibrator;
 import android.provider.MediaStore;
+import android.speech.tts.TextToSpeech;
 import android.util.Base64;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+//import android.view.MotionEvent;
+//import android.view.View;
 
 import com.google.vrtoolkit.cardboard.CardboardActivity;
 import com.google.vrtoolkit.cardboard.CardboardView;
@@ -64,6 +52,8 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.Scanner;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -82,6 +72,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private static final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
     File temp_picture;
     private Camera camera;
+    TextToSpeech t1;
+
+    String accessToken;
 
     private Camera.PictureCallback mPicture =
             new Camera.PictureCallback() {
@@ -342,7 +335,28 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
-        mOverlayView.show3DToast("Pull magnet to identify object in Spanish! ");
+
+        mOverlayView.setOnTouchListener(new View.OnTouchListener()
+        {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                onCardboardTrigger();
+                return false;
+            }
+        });
+
+        t1=new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR) {
+                    t1.setLanguage(Locale.UK);
+                }
+            }
+        });
+
+        //TODO: get access token here
     }
 
     @Override
@@ -413,6 +427,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     @Override
     public void onFrameAvailable(SurfaceTexture arg0) {
         this.cardboardView.requestRender();
+
+
     }
 
     /**
@@ -485,6 +501,16 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         protected void onPostExecute(String result) {
             mOverlayView.show3DToast(result);
 
+            //http://stackoverflow.com/questions/27968146/texttospeech-with-api-21/28000527#28000527
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                String utteranceId=this.hashCode() + "";
+                t1.speak(result, TextToSpeech.QUEUE_FLUSH, null, utteranceId);
+            } else {
+                HashMap<String, String> map = new HashMap<>();
+                map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "MessageId");
+                t1.speak(result, TextToSpeech.QUEUE_FLUSH, map);
+            }
+
             // Delete pictures now that web request has been executed
             temp_picture.delete();
         }
@@ -514,7 +540,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             // Create a new HttpClient and Post Header
             HttpClient httpclient = new DefaultHttpClient();
             HttpPost httppost = new HttpPost("https://www.metamind.io/vision/classify");
-            httppost.setHeader("Authorization", "Basic dEGa15gLOpEfua3MckyEXCz9MgzfzT48QEmte7wDCjeaPPtJBZ");
+            httppost.setHeader("Authorization", getString(R.string.metamind_auth));
 
             try {
                 // Add your data
@@ -549,14 +575,28 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                     Translate.setClientSecret("sKCdl6p7g8Cxv3X+QsEg58xKkxU8ZD3lGUdHiFDEM5c=");
 
                     // Translate an english string to another language, currently Spanish
-                    String translatedAnswer = Translate.execute(answer, Language.SPANISH);
+                    String translatedAnswer = Translate.execute(answer, mOverlayView.getLanguage());
+                    switch(mOverlayView.getLanguage()){
+                        case SPANISH:
+                            t1.setLanguage(Locale.ENGLISH);
+                            break;
+                        case FRENCH:
+                            t1.setLanguage(Locale.FRENCH);
+                            break;
+                        case GERMAN:
+                            t1.setLanguage(Locale.GERMAN);
+                            break;
+                        case RUSSIAN:
+                            t1.setLanguage(Locale.ENGLISH);
+                    }
+
                     if (translatedAnswer.equals("")) {
                         translatedAnswer = answer;
                     }
                     Log.e("Metamind CLASS NAME", answer);
                     Log.e("Translated Metamind", translatedAnswer);
 
-                    return answer;
+                    return translatedAnswer;
                 } catch (JSONException e) {
                     e.printStackTrace();
                 } catch (Exception e) {
@@ -567,6 +607,191 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 // TODO Auto-generated catch block
             } catch (IOException e) {
                 // TODO Auto-generated catch block
+            }
+            return "Object not found!";
+        }
+    }
+
+    private class AsyncCallCLF extends AsyncTask<Void, Void, String> {
+        @Override
+        protected String doInBackground(Void... values) {
+            Log.e(TAG, "doInBackground");
+            return postData();
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            mOverlayView.show3DToast(result);
+
+            //http://stackoverflow.com/questions/27968146/texttospeech-with-api-21/28000527#28000527
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                String utteranceId=this.hashCode() + "";
+                t1.speak(result, TextToSpeech.QUEUE_FLUSH, null, utteranceId);
+            } else {
+                HashMap<String, String> map = new HashMap<>();
+                map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "MessageId");
+                t1.speak(result, TextToSpeech.QUEUE_FLUSH, map);
+            }
+
+            // Delete pictures now that web request has been executed
+            temp_picture.delete();
+        }
+
+        @Override
+        protected void onPreExecute() {
+            Log.e(TAG, "onPreExecute");
+        }
+
+        public String postData() {
+
+            BitmapFactory.Options opt = new BitmapFactory.Options();
+            opt.inTempStorage = new byte[16 * 1024];
+            opt.inSampleSize = 4;
+            opt.outWidth = 640;
+            opt.outHeight = 480;
+
+            // Compress the Image
+            Bitmap bm = BitmapFactory.decodeFile(temp_picture.getPath(), opt);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bm.compress(Bitmap.CompressFormat.JPEG, 90, baos); //bm is the bitmap object
+            byte[] b = baos.toByteArray();
+            String ba = Base64.encodeToString(b, Base64.DEFAULT);
+            String img = "data:image/jpg;base64," + ba;
+
+            // Create a new HttpClient and Post Header
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost("https://www.metamind.io/vision/classify");
+            httppost.setHeader("Authorization", "Basic dEGa15gLOpEfua3MckyEXCz9MgzfzT48QEmte7wDCjeaPPtJBZ");
+
+            try {
+                // Add your data
+                JSONObject object = new JSONObject();
+                try {
+                    object.put("classifier_id", "imagenet-1k-net");
+                    object.put("image_url", img);} catch (Exception ex) {
+                    Log.e("MetaMind", "JSON Object Exception");
+                }
+                String message = object.toString();
+                httppost.setEntity(new StringEntity(message, "UTF8"));
+
+                // Execute HTTP Post Request
+                HttpResponse response = httpclient.execute(httppost);
+                // Get data out of response
+                Scanner sc = new Scanner(response.getEntity().getContent(), "UTF-8");
+
+                String jsonString = "";
+                while (sc.hasNextLine()) {
+                    jsonString += sc.nextLine();
+                }
+                JSONObject jsonObject;
+                Log.e("Metamind Results", jsonString);
+                try {
+                    jsonObject = new JSONObject(jsonString);
+                    JSONArray temp = jsonObject.getJSONArray("predictions");
+                    String answer = temp.getJSONObject(0).getString("class_name");
+
+                    //Replace client_id and client_secret with your own.
+                    Translate.setClientId("AugmentedLanguageImmersion");
+                    Translate.setClientSecret("sKCdl6p7g8Cxv3X+QsEg58xKkxU8ZD3lGUdHiFDEM5c=");
+
+                    // Translate an english string to another language, currently Spanish
+                    String translatedAnswer = Translate.execute(answer, mOverlayView.getLanguage());
+                    switch(mOverlayView.getLanguage()){
+                        case SPANISH:
+                            t1.setLanguage(Locale.ENGLISH);
+                            break;
+                        case FRENCH:
+                            t1.setLanguage(Locale.FRENCH);
+                            break;
+                        case GERMAN:
+                            t1.setLanguage(Locale.GERMAN);
+                            break;
+                        case RUSSIAN:
+                            t1.setLanguage(Locale.ENGLISH);
+                    }
+
+                    if (translatedAnswer.equals("")) {
+                        translatedAnswer = answer;
+                    }
+                    Log.e("Metamind CLASS NAME", answer);
+                    Log.e("Translated Metamind", translatedAnswer);
+
+                    return translatedAnswer;
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            } catch (ClientProtocolException e) {
+                // TODO Auto-generated catch block
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+            }
+            return "Object not found!";
+        }
+    }
+
+    private class AsyncCallCLFToken extends AsyncTask<Void, Void, String> {
+        @Override
+        protected String doInBackground(Void... values) {
+            Log.e(TAG, "doInBackground");
+            return postData();
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            accessToken = result;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            Log.e(TAG, "onPreExecute");
+        }
+
+        public String postData() {
+            // Create a new HttpClient and Post Header
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost("https://api.clarifai.com/v1/token/");
+
+            try {
+                // Add your data
+                JSONObject object = new JSONObject();
+                try {
+                    object.put("client_id", getString(R.string.client_id));
+                    object.put("client_secret", getString(R.string.client_secret));
+                    object.put("grant_type","client_credentials");
+                } catch (Exception ex) {
+                    Log.e("Clarifai Token", "JSON Object Exception");
+                }
+                String message = object.toString();
+                httppost.setEntity(new StringEntity(message, "UTF8"));
+
+                // Execute HTTP Post Request
+                HttpResponse response = httpclient.execute(httppost);
+                // Get data out of response
+                Scanner sc = new Scanner(response.getEntity().getContent(), "UTF-8");
+
+                String jsonString = "";
+                while (sc.hasNextLine()) {
+                    jsonString += sc.nextLine();
+                }
+                JSONObject jsonObject;
+                Log.e("Clarifai Results", jsonString);
+                try {
+                    jsonObject = new JSONObject(jsonString);
+                    String answer = jsonObject.getString("access_token");// TODO is this right?
+                    return answer;
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            } catch (ClientProtocolException e) {
+                //
+            } catch (IOException e) {
+                //
             }
             return "Object not found!";
         }
