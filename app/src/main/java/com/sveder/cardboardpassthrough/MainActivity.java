@@ -14,32 +14,22 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Vibrator;
-import android.provider.MediaStore;
 import android.speech.tts.TextToSpeech;
-import android.util.Base64;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-//import android.view.MotionEvent;
-//import android.view.View;
+
 
 import com.google.vrtoolkit.cardboard.CardboardActivity;
 import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.EyeTransform;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
-import com.memetix.mst.language.Language;
-import com.memetix.mst.translate.Translate;
 
 import com.clarifai.api.ClarifaiClient;
 import com.clarifai.api.RecognitionRequest;
-import com.clarifai.api.RecognitionResult;
 import com.clarifai.api.Tag;
 import com.clarifai.api.exception.ClarifaiException;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -53,8 +43,6 @@ import java.nio.ShortBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
-import java.util.Scanner;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -309,16 +297,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         return shader;
     }
 
-    /**
-     * Checks if we've had an error inside of OpenGL ES, and if so what that error is.
-     */
-    //private static void checkGLError(String func) {
-    //    int error;
-    //    while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-    //        Log.e(TAG, func + ": glError " + error);
-    //        throw new RuntimeException(func + ": glError " + error);
-    //    }
-    //}
 
     /**
      * Sets the view to our CardboardView and initializes the transformation matrices we will use
@@ -354,13 +332,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             @Override
             public void onInit(int status) {
                 if(status != TextToSpeech.ERROR) {
-                    t1.setLanguage(Locale.UK);
+                    t1.setLanguage(mOverlayView.getLanguage());
                 }
             }
         });
         client = new ClarifaiClient(getString(R.string.client_id),
                 getString(R.string.client_secret));
-        //TODO: get access token here
+
     }
 
     @Override
@@ -541,54 +519,18 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             byte[] jpeg = baos.toByteArray();
             String answer;
             try {
-                Log.e(TAG, "Testing for submission of api call");
-                Tag t = client.recognize(new RecognitionRequest(jpeg)).get(0).getTags().get(0);
+                RecognitionRequest r = new RecognitionRequest(jpeg);
+                r.setLocale(mOverlayView.getClarifaiLanguage());
+                Tag t = client.recognize(r).get(0).getTags().get(0);
                 answer = t.getName();
-                Log.e(TAG, "api result: " + answer + "probability: " + t.getProbability());
+                Log.e(TAG, "API result: " + answer + "; probability: " + t.getProbability());
 
             } catch (ClarifaiException e) {
                 Log.e(TAG, "Clarifai error", e);
-                return null;
+                return "Object not found!";
             }
-                try {
-                    //Replace client_id and client_secret with your own.
-                    Translate.setClientId("AugmentedLanguageImmersion");
-                    Translate.setClientSecret("sKCdl6p7g8Cxv3X+QsEg58xKkxU8ZD3lGUdHiFDEM5c=");
-
-                    // Translate an english string to another language, currently Spanish
-                    Log.e(TAG, "result translated: " + "Fuk");
-
-                    String translatedAnswer = Translate.execute(answer, mOverlayView.getLanguage());
-                    Log.e(TAG, "result translated: " + translatedAnswer);
-                    switch (mOverlayView.getLanguage()) {
-                        case SPANISH:
-                            t1.setLanguage(Locale.ENGLISH);
-                            break;
-                        case FRENCH:
-                            t1.setLanguage(Locale.FRENCH);
-                            break;
-                        case GERMAN:
-                            t1.setLanguage(Locale.GERMAN);
-                            break;
-                        case RUSSIAN:
-                            t1.setLanguage(Locale.ENGLISH);
-                    }
-
-                    if (translatedAnswer.equals("")) {
-                        translatedAnswer = answer;
-                    }
-                    Log.e("Metamind CLASS NAME", answer);
-                    Log.e("Translated Metamind", translatedAnswer);
-
-                    return translatedAnswer;
-                } catch (JSONException e) {
-                    Log.e(TAG, "Json exception");
-                    e.printStackTrace();
-                } catch (Exception e) {
-                    Log.e(TAG, "language exception", e);
-                }
-
-            return "Object not found2!";
+            t1.setLanguage(mOverlayView.getLanguage());
+            return answer;
 
         }
     }

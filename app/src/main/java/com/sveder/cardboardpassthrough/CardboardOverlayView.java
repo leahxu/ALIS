@@ -35,6 +35,8 @@ import android.widget.TextView;
 
 import com.memetix.mst.language.Language;
 
+import java.util.Locale;
+
 /**
  * Contains two sub-views to provide a simple stereo HUD.
  */
@@ -44,11 +46,24 @@ public class CardboardOverlayView extends LinearLayout {
     private final CardboardOverlayEyeView mRightView;
     private AlphaAnimation mTextFadeAnimation;
 
+    CharSequence languages[] = new CharSequence[] {"English","Spanish", "French", "German", "Russian"};
+    Locale locales[] = new Locale [] {Locale.US,new Locale ("spa", "MEX"),Locale.FRENCH,Locale.GERMAN,new Locale("rus","RUS")};
+    // Languages supported for Android text-to-speech may vary device-to-device
+    Locale localesClarifai[] = new Locale [] {Locale.US,new Locale ("es"),Locale.FRENCH,Locale.GERMAN,new Locale("rus")};
+    // Clarifai languages supported: https://developer.clarifai.com/guide/languages
+    int lang = 0; // set default to 0;
 
-    private Language lang = Language.SPANISH;
 
-    public Language getLanguage(){
-        return lang;
+    public Locale getLanguage(){
+        return locales[lang];
+    }
+
+    public Locale getClarifaiLanguage(){
+       return localesClarifai[lang];
+    }
+
+    public String getLanguageString(){
+        return languages[lang].toString();
     }
 
     public CardboardOverlayView(Context context, AttributeSet attrs) {
@@ -75,29 +90,13 @@ public class CardboardOverlayView extends LinearLayout {
         mTextFadeAnimation = new AlphaAnimation(1.0f, 0.0f);
         mTextFadeAnimation.setDuration(5000);
 
-        CharSequence colors[] = new CharSequence[] {"Spanish", "French", "German", "Russian"};
-
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Welcome to ALIS. I want to learn:");
-        builder.setItems(colors, new DialogInterface.OnClickListener() {
+        builder.setItems(languages, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //(Button)findViewById(id);
-                switch(which){
-                    case 0:
-                        lang = Language.SPANISH;
-                        break;
-                    case 1:
-                        lang = Language.FRENCH;
-                        break;
-                    case 2:
-                        lang = Language.GERMAN;
-                        break;
-                    case 3:
-                        lang = Language.RUSSIAN;
-                        break;
-                }
-                show3DToast("Pull magnet to identify object in " + lang.name() + "!");
+                lang = which;
+                show3DToast("Pull magnet to identify object in " + getLanguageString() + "!");
             }
         });
         builder.show();
