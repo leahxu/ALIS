@@ -31,12 +31,12 @@ import com.google.vrtoolkit.cardboard.Viewport;
 import com.memetix.mst.language.Language;
 import com.memetix.mst.translate.Translate;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
+import com.clarifai.api.ClarifaiClient;
+import com.clarifai.api.RecognitionRequest;
+import com.clarifai.api.RecognitionResult;
+import com.clarifai.api.Tag;
+import com.clarifai.api.exception.ClarifaiException;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -73,6 +73,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     File temp_picture;
     private Camera camera;
     TextToSpeech t1;
+
+    private  ClarifaiClient client;// = new ClarifaiClient(getString(R.string.client_id),
+            //getString(R.string.client_secret));
 
     String accessToken;
 
@@ -355,7 +358,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 }
             }
         });
-
+        client = new ClarifaiClient(getString(R.string.client_id),
+                getString(R.string.client_secret));
         //TODO: get access token here
     }
 
@@ -503,7 +507,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
             //http://stackoverflow.com/questions/27968146/texttospeech-with-api-21/28000527#28000527
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                String utteranceId=this.hashCode() + "";
+                String utteranceId = this.hashCode() + "";
                 t1.speak(result, TextToSpeech.QUEUE_FLUSH, null, utteranceId);
             } else {
                 HashMap<String, String> map = new HashMap<>();
@@ -533,50 +537,30 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             Bitmap bm = BitmapFactory.decodeFile(temp_picture.getPath(), opt);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bm.compress(Bitmap.CompressFormat.JPEG, 90, baos); //bm is the bitmap object
-            byte[] b = baos.toByteArray();
-            String ba = Base64.encodeToString(b, Base64.DEFAULT);
-            String img = "data:image/jpg;base64," + ba;
 
-            // Create a new HttpClient and Post Header
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost("https://www.metamind.io/vision/classify");
-            httppost.setHeader("Authorization", getString(R.string.metamind_auth));
-
+            byte[] jpeg = baos.toByteArray();
+            String answer;
             try {
-                // Add your data
-                JSONObject object = new JSONObject();
+                Log.e(TAG, "Testing for submission of api call");
+                Tag t = client.recognize(new RecognitionRequest(jpeg)).get(0).getTags().get(0);
+                answer = t.getName();
+                Log.e(TAG, "api result: " + answer + "probability: " + t.getProbability());
+
+            } catch (ClarifaiException e) {
+                Log.e(TAG, "Clarifai error", e);
+                return null;
+            }
                 try {
-                    object.put("classifier_id", "imagenet-1k-net");
-                    object.put("image_url", img);//"https://www.petfinder.com/wp-content/uploads/2012/11/dog-how-to-select-your-new-best-friend-thinkstock99062463.jpg");
-                } catch (Exception ex) {
-                    Log.e("MetaMind", "JSON Object Exception");
-                }
-                String message = object.toString();
-                httppost.setEntity(new StringEntity(message, "UTF8"));
-
-                // Execute HTTP Post Request
-                HttpResponse response = httpclient.execute(httppost);
-                // Get data out of response
-                Scanner sc = new Scanner(response.getEntity().getContent(), "UTF-8");
-
-                String jsonString = "";
-                while (sc.hasNextLine()) {
-                    jsonString += sc.nextLine();
-                }
-                JSONObject jsonObject;
-                Log.e("Metamind Results", jsonString);
-                try {
-                    jsonObject = new JSONObject(jsonString);
-                    JSONArray temp = jsonObject.getJSONArray("predictions");
-                    String answer = temp.getJSONObject(0).getString("class_name");
-
                     //Replace client_id and client_secret with your own.
                     Translate.setClientId("AugmentedLanguageImmersion");
                     Translate.setClientSecret("sKCdl6p7g8Cxv3X+QsEg58xKkxU8ZD3lGUdHiFDEM5c=");
 
                     // Translate an english string to another language, currently Spanish
+                    Log.e(TAG, "result translated: " + "Fuk");
+
                     String translatedAnswer = Translate.execute(answer, mOverlayView.getLanguage());
-                    switch(mOverlayView.getLanguage()){
+                    Log.e(TAG, "result translated: " + translatedAnswer);
+                    switch (mOverlayView.getLanguage()) {
                         case SPANISH:
                             t1.setLanguage(Locale.ENGLISH);
                             break;
@@ -598,202 +582,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
                     return translatedAnswer;
                 } catch (JSONException e) {
+                    Log.e(TAG, "Json exception");
                     e.printStackTrace();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "language exception", e);
                 }
 
-            } catch (ClientProtocolException e) {
-                // TODO Auto-generated catch block
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-            }
-            return "Object not found!";
-        }
-    }
+            return "Object not found2!";
 
-    private class AsyncCallCLF extends AsyncTask<Void, Void, String> {
-        @Override
-        protected String doInBackground(Void... values) {
-            Log.e(TAG, "doInBackground");
-            return postData();
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            mOverlayView.show3DToast(result);
-
-            //http://stackoverflow.com/questions/27968146/texttospeech-with-api-21/28000527#28000527
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                String utteranceId=this.hashCode() + "";
-                t1.speak(result, TextToSpeech.QUEUE_FLUSH, null, utteranceId);
-            } else {
-                HashMap<String, String> map = new HashMap<>();
-                map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "MessageId");
-                t1.speak(result, TextToSpeech.QUEUE_FLUSH, map);
-            }
-
-            // Delete pictures now that web request has been executed
-            temp_picture.delete();
-        }
-
-        @Override
-        protected void onPreExecute() {
-            Log.e(TAG, "onPreExecute");
-        }
-
-        public String postData() {
-
-            BitmapFactory.Options opt = new BitmapFactory.Options();
-            opt.inTempStorage = new byte[16 * 1024];
-            opt.inSampleSize = 4;
-            opt.outWidth = 640;
-            opt.outHeight = 480;
-
-            // Compress the Image
-            Bitmap bm = BitmapFactory.decodeFile(temp_picture.getPath(), opt);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bm.compress(Bitmap.CompressFormat.JPEG, 90, baos); //bm is the bitmap object
-            byte[] b = baos.toByteArray();
-            String ba = Base64.encodeToString(b, Base64.DEFAULT);
-            String img = "data:image/jpg;base64," + ba;
-
-            // Create a new HttpClient and Post Header
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost("https://www.metamind.io/vision/classify");
-            httppost.setHeader("Authorization", "Basic dEGa15gLOpEfua3MckyEXCz9MgzfzT48QEmte7wDCjeaPPtJBZ");
-
-            try {
-                // Add your data
-                JSONObject object = new JSONObject();
-                try {
-                    object.put("classifier_id", "imagenet-1k-net");
-                    object.put("image_url", img);} catch (Exception ex) {
-                    Log.e("MetaMind", "JSON Object Exception");
-                }
-                String message = object.toString();
-                httppost.setEntity(new StringEntity(message, "UTF8"));
-
-                // Execute HTTP Post Request
-                HttpResponse response = httpclient.execute(httppost);
-                // Get data out of response
-                Scanner sc = new Scanner(response.getEntity().getContent(), "UTF-8");
-
-                String jsonString = "";
-                while (sc.hasNextLine()) {
-                    jsonString += sc.nextLine();
-                }
-                JSONObject jsonObject;
-                Log.e("Metamind Results", jsonString);
-                try {
-                    jsonObject = new JSONObject(jsonString);
-                    JSONArray temp = jsonObject.getJSONArray("predictions");
-                    String answer = temp.getJSONObject(0).getString("class_name");
-
-                    //Replace client_id and client_secret with your own.
-                    Translate.setClientId("AugmentedLanguageImmersion");
-                    Translate.setClientSecret("sKCdl6p7g8Cxv3X+QsEg58xKkxU8ZD3lGUdHiFDEM5c=");
-
-                    // Translate an english string to another language, currently Spanish
-                    String translatedAnswer = Translate.execute(answer, mOverlayView.getLanguage());
-                    switch(mOverlayView.getLanguage()){
-                        case SPANISH:
-                            t1.setLanguage(Locale.ENGLISH);
-                            break;
-                        case FRENCH:
-                            t1.setLanguage(Locale.FRENCH);
-                            break;
-                        case GERMAN:
-                            t1.setLanguage(Locale.GERMAN);
-                            break;
-                        case RUSSIAN:
-                            t1.setLanguage(Locale.ENGLISH);
-                    }
-
-                    if (translatedAnswer.equals("")) {
-                        translatedAnswer = answer;
-                    }
-                    Log.e("Metamind CLASS NAME", answer);
-                    Log.e("Translated Metamind", translatedAnswer);
-
-                    return translatedAnswer;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-            } catch (ClientProtocolException e) {
-                // TODO Auto-generated catch block
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-            }
-            return "Object not found!";
-        }
-    }
-
-    private class AsyncCallCLFToken extends AsyncTask<Void, Void, String> {
-        @Override
-        protected String doInBackground(Void... values) {
-            Log.e(TAG, "doInBackground");
-            return postData();
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            accessToken = result;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            Log.e(TAG, "onPreExecute");
-        }
-
-        public String postData() {
-            // Create a new HttpClient and Post Header
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost("https://api.clarifai.com/v1/token/");
-
-            try {
-                // Add your data
-                JSONObject object = new JSONObject();
-                try {
-                    object.put("client_id", getString(R.string.client_id));
-                    object.put("client_secret", getString(R.string.client_secret));
-                    object.put("grant_type","client_credentials");
-                } catch (Exception ex) {
-                    Log.e("Clarifai Token", "JSON Object Exception");
-                }
-                String message = object.toString();
-                httppost.setEntity(new StringEntity(message, "UTF8"));
-
-                // Execute HTTP Post Request
-                HttpResponse response = httpclient.execute(httppost);
-                // Get data out of response
-                Scanner sc = new Scanner(response.getEntity().getContent(), "UTF-8");
-
-                String jsonString = "";
-                while (sc.hasNextLine()) {
-                    jsonString += sc.nextLine();
-                }
-                JSONObject jsonObject;
-                Log.e("Clarifai Results", jsonString);
-                try {
-                    jsonObject = new JSONObject(jsonString);
-                    String answer = jsonObject.getString("access_token");// TODO is this right?
-                    return answer;
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-            } catch (ClientProtocolException e) {
-                //
-            } catch (IOException e) {
-                //
-            }
-            return "Object not found!";
         }
     }
 }
