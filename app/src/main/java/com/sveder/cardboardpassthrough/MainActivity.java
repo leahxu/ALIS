@@ -25,6 +25,9 @@ import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.EyeTransform;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
+import com.memetix.mst.language.Language;
+import com.memetix.mst.translate.Translate;
+
 
 import com.clarifai.api.ClarifaiClient;
 import com.clarifai.api.RecognitionRequest;
@@ -41,8 +44,10 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -62,6 +67,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private Camera camera;
     TextToSpeech t1;
 
+    List<String> invalid_set = Arrays.asList("no person", "room", "indoors", "one", "abstract", "furniture", "blur", "portrait", "food", "business");
     private  ClarifaiClient client;// = new ClarifaiClient(getString(R.string.client_id),
             //getString(R.string.client_secret));
 
@@ -482,6 +488,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         @Override
         protected void onPostExecute(String result) {
             mOverlayView.show3DToast(result);
+            String[] split = result.split("\n");
+            result = split[0];
 
             //http://stackoverflow.com/questions/27968146/texttospeech-with-api-21/28000527#28000527
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -517,17 +525,38 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             bm.compress(Bitmap.CompressFormat.JPEG, 90, baos); //bm is the bitmap object
 
             byte[] jpeg = baos.toByteArray();
-            String answer;
+            String answer = "";
             try {
                 RecognitionRequest r = new RecognitionRequest(jpeg);
-                r.setLocale(mOverlayView.getClarifaiLanguage());
-                Tag t = client.recognize(r).get(0).getTags().get(0);
-                answer = t.getName();
-                Log.e(TAG, "API result: " + answer + "; probability: " + t.getProbability());
+                // r.setLocale(mOverlayView.getClarifaiLanguage());
+
+                List<Tag> tags = client.recognize(r).get(0).getTags();//.get(0);
+                Tag t = null;
+                for (int i = 0; i < 3; i++) {
+                    if (!invalid_set.contains(tags.get(i).getName()))
+                        t = tags.get(i);
+
+                }
+                if (t == null) {
+                    answer = "Try again";
+                } else {
+                    answer = t.getName();
+                }
+                //Replace client_id and client_secret with your own.
+                Translate.setClientId("AugmentedLanguageImmersion");
+                Translate.setClientSecret("sKCdl6p7g8Cxv3X+QsEg58xKkxU8ZD3lGUdHiFDEM5c=");
+
+                // Translate an english string to another language, currently Spanish
+                String trans_string = Translate.execute(answer, mOverlayView.getLanguageMemetix());
+                answer = trans_string+ "\n" + "\n" + answer ;
+
+                Log.e(TAG, "API result: " + answer);
 
             } catch (ClarifaiException e) {
                 Log.e(TAG, "Clarifai error", e);
                 return "Object not found!";
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             t1.setLanguage(mOverlayView.getLanguage());
             return answer;

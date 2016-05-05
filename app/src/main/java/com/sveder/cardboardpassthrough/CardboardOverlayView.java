@@ -16,6 +16,7 @@
 
 package com.sveder.cardboardpassthrough;
 
+import com.memetix.mst.language.Language;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -51,6 +52,7 @@ public class CardboardOverlayView extends LinearLayout {
     // Languages supported for Android text-to-speech may vary device-to-device
     Locale localesClarifai[] = new Locale [] {Locale.US,new Locale ("es"),Locale.FRENCH,Locale.GERMAN,new Locale("rus")};
     // Clarifai languages supported: https://developer.clarifai.com/guide/languages
+    Language memetixLanguages[] = new Language[]{Language.ENGLISH,Language.SPANISH,Language.FRENCH,Language.GERMAN,Language.RUSSIAN};
     int lang = 0; // set default to 0;
 
 
@@ -64,6 +66,10 @@ public class CardboardOverlayView extends LinearLayout {
 
     public String getLanguageString(){
         return languages[lang].toString();
+    }
+
+    public Language getLanguageMemetix(){
+        return memetixLanguages[lang];
     }
 
     public CardboardOverlayView(Context context, AttributeSet attrs) {
